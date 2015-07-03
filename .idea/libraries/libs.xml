@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="libs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/ioiolibandroid.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/ioiolibaccessory.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/twitpic4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/ioiolibandroiddevice.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/twitter4j-core-3.0.4-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/libs/ioiolibbt.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

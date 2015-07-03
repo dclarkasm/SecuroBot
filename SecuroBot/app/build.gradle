@@ -23,7 +23,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.android.support:support-v4:22.0.0'
-    compile files('src/main/res/libs/json-simple-1.1.1.jar')
+    //compile files('src/main/res/libs/json-simple-1.1.1.jar')
     compile files('libs/twitpic4j.jar')
     compile files('libs/ioiolibaccessory.jar')
     compile files('libs/ioiolibandroid.jar')

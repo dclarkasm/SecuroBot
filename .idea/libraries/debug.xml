@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="debug">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/internal_impl-22.0.0-5d241e3eb1e794d1fc2b53daf51060a6f1ed1a1e.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/ioiolibaccessory-c4252f3ac2aabd29654bded95748c921a13feaea.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/ioiolibandroiddevice-f18042c78bfb745592b03cc0dd540e4ff485210f.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/classes-aeac072f13b4b0fa0861f5f55ac38a8d863f02ae.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/ioiolibandroid-1a4e9451408a386c338f416d600ed2ac7b89601c.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/classes-257937bf3746a29bee05cff60433f78b6c099bb3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/twitpic4j-bc0aceca5378df3b99be54f7d3d0de033c02dd5c.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/ioiolibbt-cef10a6a3d0fae373f1a3567db97d8b3e592b16d.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/support-annotations-22.0.0-d2f6da881613077a41d18bb92f0153c68b43b8ab.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/json-simple-1.1.1-28d0409b4d378ff1717068971c9bb3c1d250e37a.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SecuroBot/app/build/intermediates/pre-dexed/debug/twitter4j-core-3.0.4-SNAPSHOT-34da528bcfda6edb6f0228813bac643384fb2144.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
