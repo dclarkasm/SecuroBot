@@ -460,7 +460,7 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
                 {
                     String toSpeak = t.getTweetBy() + " says " + t.getTweet();
                     Log.d("Twater", toSpeak);
-                    t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, null);
+                    t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
                 }
             } else {
                 Toast.makeText(SecuroBotMain.this, "Could not find results for search", Toast.LENGTH_LONG).show();
