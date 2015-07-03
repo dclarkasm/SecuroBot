@@ -17,14 +17,17 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimerTask;
 
+import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
+import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
@@ -263,6 +266,8 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
     class Looper extends BaseIOIOLooper {
         /** The on-board LED. */
         private DigitalOutput led_;
+        private AnalogInput A0;
+        private PwmOutput pwm;
 
         /**
          * Called every time a connection with IOIO has been established.
@@ -277,6 +282,14 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
         protected void setup() throws ConnectionLostException {
             showVersions(ioio_, "IOIO connected!");
             led_ = ioio_.openDigitalOutput(0, true);
+            A0 = ioio_.openAnalogInput(33);
+
+            try {
+                pwm= ioio_.openPwmOutput(35, 100);  //new DigitalOutput.Spec(35, DigitalOutput.Spec.Mode.OPEN_DRAIN)
+            } catch (ConnectionLostException e) {
+                Log.d("Connection Lost", "IO Connection Lost");
+                //throw e;
+            }
         }
 
         /**
@@ -293,26 +306,37 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
         public void loop() throws ConnectionLostException, InterruptedException {
             int il = r.nextInt(100-0)+0; //random number between 0 and 100
             int ir = r.nextInt(100-0)+0;
+            float value = A0.read();    //a reading from 0->1 (few mS latency)
+            float volts = A0.getVoltage();  //an alternate way of getting the reading (absolute V)
+            Log.d("IR TEST", "Value: " + value + ", Volts: " + volts);
 
             if(il>50) {
+/*
                 if(lEResource == R.drawable.blueeyesclosedleft) {
                     lEResource = R.drawable.blueeyesopenleft;
                 }
                 else lEResource = R.drawable.blueeyesclosedleft;
                 leftEye.setImageResource(lEResource);
+*/
+                //pwm.setDutyCycle(0f);
+                pwm.setPulseWidth(1000);
                 led_.write(false);
             }
 
             if(ir>50) {
+/*
                 if(rEResource == R.drawable.blueeyesclosedright) {
                     rEResource = R.drawable.blueeyesopenright;
                 }
                 else rEResource = R.drawable.blueeyesclosedright;
                 rightEye.setImageResource(rEResource);
+*/
+                //pwm.setDutyCycle(0.25f);
+                pwm.setPulseWidth(2000);
                 led_.write(true);
             }
 
-            new SearchOnTwitter().execute("cyber security");
+            //new SearchOnTwitter().execute("cyber security");
 
             Thread.sleep(1000);
         }
@@ -337,9 +361,7 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
             showVersions(ioio_, "Incompatible firmware version!");
         }
     }
-//test
-    //hrbrhtn
-    int i=0;
+
     /**
      * A method to create our IOIO thread.
      *
