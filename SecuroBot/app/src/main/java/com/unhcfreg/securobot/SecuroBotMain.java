@@ -3,13 +3,11 @@ package com.unhcfreg.securobot;
 import com.unhcfreg.securobot.util.SystemUiHider;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -17,14 +15,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimerTask;
 
-import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PwmOutput;
@@ -34,7 +30,6 @@ import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import twitter4j.Query;
 import twitter4j.QueryResult;
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.OAuth2Token;
@@ -47,11 +42,12 @@ import twitter4j.conf.ConfigurationBuilder;
  *
  * @see SystemUiHider
  */
-public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitListener{
-//test
-    //test2
+public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInitListener
+{
 
-    TextToSpeech t1;
+    //TextToSpeech t1;
+    TTSEngine t1;
+    TwitterEngine twitSearch = new TwitterEngine();
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -87,11 +83,11 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
     int rEResource;
     TimerTask timerTask;
     final Handler handler = new Handler();
-    //Runnable runnable;
-    //private Handler mHandler;
+    Runnable runnable;
+    private Handler mHandler;
     Random r = new Random();
 
-    /*
+
     void startRepeatingTask() {
         runnable.run();
     }
@@ -99,14 +95,14 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
     void stopRepeatingTask() {
         mHandler.removeCallbacks(runnable);
     }
-*/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_securo_bot_main);
 
-        t1=new TextToSpeech(this, this);
+        t1=new TTSEngine(this);
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         //left
@@ -172,11 +168,30 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
                 }
             }
         });
-/*
+
         runnable = new Runnable() {
             @Override
             public void run() {
+                int il = r.nextInt(0+100);
+                int ir = r.nextInt(0+100);
 
+                if(il>50) {
+
+                if(lEResource == R.drawable.blueeyesclosedleft) {
+                    lEResource = R.drawable.blueeyesopenleft;
+                }
+                else lEResource = R.drawable.blueeyesclosedleft;
+                leftEye.setImageResource(lEResource);
+                }
+
+                if(ir>50) {
+
+                if(rEResource == R.drawable.blueeyesclosedright) {
+                    rEResource = R.drawable.blueeyesopenright;
+                }
+                else rEResource = R.drawable.blueeyesclosedright;
+                rightEye.setImageResource(rEResource);
+                }
             }
 
             public void wait(int time) {
@@ -193,7 +208,9 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
         };
         mHandler = new Handler();
         startRepeatingTask();
-*/
+
+        twitSearch.setTTSEngine(t1);
+        twitSearch.searchOnTwitter("cyber security");
     }
 
     @Override
@@ -205,23 +222,18 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
         // are available.
         delayedHide(100);
     }
-
+/*
     public void onPause(){
-        if(t1 !=null){
-            t1.stop();
-            t1.shutdown();
-        }
+        t1.pause();
         super.onPause();
     }
 
     @Override
     public void onInit ( int status){
-        if (status == TextToSpeech.SUCCESS) {
-            Log.d("TTS", "Success!");
-            t1.setLanguage(Locale.US);
-        }
+        t1.init(status);
+        twitSearch.setTTSEngine(t1);
     }
-
+*/
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
@@ -266,8 +278,10 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
     class Looper extends BaseIOIOLooper {
         /** The on-board LED. */
         private DigitalOutput led_;
-        private AnalogInput A0;
+        private IRSensor iRSensors = new IRSensor(33);
         private PwmOutput pwm;
+        float value, volts;
+        int newPos, currentPos;
 
         /**
          * Called every time a connection with IOIO has been established.
@@ -279,16 +293,16 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
          * @see ioio.lib.util.IOIOLooper
          */
         @Override
-        protected void setup() throws ConnectionLostException {
+        protected void setup() throws ConnectionLostException, InterruptedException {
             showVersions(ioio_, "IOIO connected!");
             led_ = ioio_.openDigitalOutput(0, true);
-            A0 = ioio_.openAnalogInput(33);
+            iRSensors.input = ioio_.openAnalogInput(iRSensors.pin);
+            initIR();
 
             try {
                 pwm= ioio_.openPwmOutput(35, 100);  //new DigitalOutput.Spec(35, DigitalOutput.Spec.Mode.OPEN_DRAIN)
             } catch (ConnectionLostException e) {
                 Log.d("Connection Lost", "IO Connection Lost");
-                //throw e;
             }
         }
 
@@ -304,41 +318,75 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
          */
         @Override
         public void loop() throws ConnectionLostException, InterruptedException {
-            int il = r.nextInt(100-0)+0; //random number between 0 and 100
-            int ir = r.nextInt(100-0)+0;
-            float value = A0.read();    //a reading from 0->1 (few mS latency)
-            float volts = A0.getVoltage();  //an alternate way of getting the reading (absolute V)
-            Log.d("IR TEST", "Value: " + value + ", Volts: " + volts);
+            int re = r.nextInt(100-0); //random number between 0 and 100 for rotation enable
+            int ra = r.nextInt(2-0); //random number between 0 and 100 for rotation angle
 
-            if(il>50) {
-/*
-                if(lEResource == R.drawable.blueeyesclosedleft) {
-                    lEResource = R.drawable.blueeyesopenleft;
+            if(re <= 1) {  //20% chance that the head will rotate
+                switch(ra){
+                    case 0: newPos = 600; break;
+                    case 1: newPos = 1550; break;
+                    case 2: newPos = 2500; break;
+                    default: break;
                 }
-                else lEResource = R.drawable.blueeyesclosedleft;
-                leftEye.setImageResource(lEResource);
-*/
-                //pwm.setDutyCycle(0f);
-                pwm.setPulseWidth(1000);
-                led_.write(false);
+
+                if(newPos != currentPos)
+                {
+                    led_.write(true);
+                    pwm.setPulseWidth(newPos);
+                    currentPos = newPos;
+                    Log.d("ROTATE", "Moving to position: " + newPos + "...");
+                    Thread.sleep(1000);
+                    Log.d("ROTATE", "At position: " + newPos);
+                    initIR();
+                }
+            }
+            else{
+                float measVal = iRSensors.input.read();
+                float measVolt = iRSensors.input.getVoltage();
+                if(iRSensors.motionDetect(measVal, measVolt)) {
+                    led_.write(false);
+                    Log.d("MOTION", "Detected motion!"
+                                + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                                ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                    );
+                    t1.speak("Hello, student", TextToSpeech.QUEUE_FLUSH, null);
+
+                    try{
+                        twitSearch.searchOnTwitter("cyber security");
+                        twitSearch.speakLatestTweet();
+                    }
+                    catch(Exception e) {
+                        Log.d("TWITTER", "Caught an exception!");
+                        e.printStackTrace();
+                    }
+
+                    iRSensors.initialize(measVal, measVolt);
+                }
+                else {
+                    led_.write(true);
+                    /*Log.d("NO MOTION", "Detected NO motion!"
+                               // + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                               // ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                    );*/
+                    iRSensors.initialize(measVal, measVolt);
+                }
             }
 
-            if(ir>50) {
-/*
-                if(rEResource == R.drawable.blueeyesclosedright) {
-                    rEResource = R.drawable.blueeyesopenright;
-                }
-                else rEResource = R.drawable.blueeyesclosedright;
-                rightEye.setImageResource(rEResource);
-*/
-                //pwm.setDutyCycle(0.25f);
-                pwm.setPulseWidth(2000);
-                led_.write(true);
+            Thread.sleep(100);
+        }
+
+        public void initIR() throws ConnectionLostException, InterruptedException
+        {
+            float baseVal=0f, baseVolt=0f;
+
+            for(int i=0; i<iRSensors.iSamples; i++) {
+                baseVal += iRSensors.input.read();
+                baseVolt += iRSensors.input.getVoltage();
+                //Thread.sleep(5);
             }
-
-            //new SearchOnTwitter().execute("cyber security");
-
-            Thread.sleep(1000);
+            iRSensors.initialize(baseVal/iRSensors.iSamples, baseVolt/iRSensors.iSamples);
+            Log.d("INIT IR", "Base Val: " + baseVal/iRSensors.iSamples +
+                    ", base Volt: " + baseVolt/iRSensors.iSamples);
         }
 
         /**
@@ -395,101 +443,7 @@ public class SecuroBotMain extends IOIOActivity implements TextToSpeech.OnInitLi
         });
     }
 
-    private int numConnected_ = 0;
-/*
-    private void enableUi(final boolean enable) {
-        // This is slightly trickier than expected to support a multi-IOIO use-case.
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (enable) {
-                    if (numConnected_++ == 0) {
-                        button_.setEnabled(true);
-                    }
-                } else {
-                    if (--numConnected_ == 0) {
-                        button_.setEnabled(false);
-                    }
-                }
-            }
-        });
-    }
-*/
 
-    class SearchOnTwitter extends AsyncTask<String, Void, Integer> {
-        ArrayList<Tweet> tweets;
-        final int SUCCESS = 0;
-        final int FAILURE = SUCCESS + 1;
-        private final String TWIT_CONS_KEY = "r5Z9pl8sE6TOuuFGCvea0ySwF";
-        private final String TWIT_CONS_SEC_KEY = "Qhthb9U8FRErYKhtq0Bl09M0uJMmNAizW893c01Ye2m6apvYPk";
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Integer doInBackground(String... params) {
-            try {
-                ConfigurationBuilder builder = new ConfigurationBuilder();
-                builder.setUseSSL(true);
-                builder.setApplicationOnlyAuthEnabled(true);
-                builder.setOAuthConsumerKey(TWIT_CONS_KEY);
-                builder.setOAuthConsumerSecret(TWIT_CONS_SEC_KEY);
-
-                OAuth2Token token = new TwitterFactory(builder.build()).getInstance().getOAuth2Token();
-
-                builder = new ConfigurationBuilder();
-                builder.setUseSSL(true);
-                builder.setApplicationOnlyAuthEnabled(true);
-                builder.setOAuthConsumerKey(TWIT_CONS_KEY);
-                builder.setOAuthConsumerSecret(TWIT_CONS_SEC_KEY);
-                builder.setOAuth2TokenType(token.getTokenType());
-                builder.setOAuth2AccessToken(token.getAccessToken());
-
-                Twitter twitter = new TwitterFactory(builder.build()).getInstance();
-
-                Query query = new Query(params[0]);
-                // YOu can set the count of maximum records here
-                query.setCount(1);
-                QueryResult result;
-                result = twitter.search(query);
-                List<twitter4j.Status> tweets = result.getTweets();
-                StringBuilder str = new StringBuilder();
-                if (tweets != null) {
-                    this.tweets = new ArrayList<Tweet>();
-                    for (twitter4j.Status tweet : tweets) {
-                        str.append("@" + tweet.getUser().getScreenName() + " - " + tweet.getText() + "\n");
-                        System.out.println(str);
-                        this.tweets.add(new Tweet("@" + tweet.getUser().getScreenName(), tweet.getText()));
-                    }
-                    return SUCCESS;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return FAILURE;
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            super.onPostExecute(result);
-            if (result == SUCCESS) {
-                Toast.makeText(SecuroBotMain.this, "Search was successful", Toast.LENGTH_LONG).show();
-                //t1.speak("hello", TextToSpeech.QUEUE_FLUSH, null, null);
-                for(Tweet t : tweets)
-                {
-                    String toSpeak = t.getTweetBy() + " says " + t.getTweet();
-                    Log.d("Twater", toSpeak);
-                    t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
-                }
-            } else {
-                Toast.makeText(SecuroBotMain.this, "Could not find results for search", Toast.LENGTH_LONG).show();
-                Log.d("Twater", "Search was not successful");
-            }
-        }
-    }
 }
 
 

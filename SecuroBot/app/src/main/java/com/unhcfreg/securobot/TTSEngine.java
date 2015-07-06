@@ -1,0 +1,41 @@
+package com.unhcfreg.securobot;
+
+import android.content.Context;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
+
+import java.util.HashMap;
+import java.util.Locale;
+
+/**
+ * Created by Devon on 7/5/2015.
+ */
+public class TTSEngine implements TextToSpeech.OnInitListener{
+    public TextToSpeech t1;
+
+    public TTSEngine(Context c) {
+        t1 = new TextToSpeech(c, this);
+    }
+
+    public void onPause(){
+        if(t1 !=null){
+            t1.stop();
+            t1.shutdown();
+        }
+    }
+
+    @Override
+    public void onInit ( int status){
+        if (status == TextToSpeech.SUCCESS) {
+            Log.d("TTS", "Success!");
+            t1.setLanguage(Locale.US);
+        }
+    }
+
+    public void speak(String string, int queueMode, HashMap<String, String> params){
+        if(!t1.isSpeaking()){
+            t1.speak(string, queueMode, params);
+            while(t1.isSpeaking()); //wait while t1 speaks
+        }
+    }
+}
