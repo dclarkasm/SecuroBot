@@ -212,7 +212,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         startRepeatingTask();
 
         action.setTTSEngine(t1);
-        action.executeTweetSearch(true);
+        action.executeTweetSearch(false);
     }
 
     @Override
@@ -327,7 +327,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                 switch(ra){
                     case 0: newPos = 600; break;
                     case 1: newPos = 1550; break;
-                    case 2: newPos = 2500; break;
+                    case 2: newPos = 2450; break;
                     default: break;
                 }
 

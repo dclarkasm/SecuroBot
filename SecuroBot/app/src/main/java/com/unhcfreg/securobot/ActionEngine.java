@@ -3,13 +3,17 @@ package com.unhcfreg.securobot;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
  * Created by Devon on 7/5/2015.
  */
 public class ActionEngine {
-    public TTSEngine engine;
+    public TTSEngine TTSE;
+    private GreetingEngine greetingE = new GreetingEngine();
+    private JokeEngine jokeE = new JokeEngine();
+    private TipEngine tipE = new TipEngine();
     Random r = new Random();
     private TwitterEngine twitSearch = new TwitterEngine();
 
@@ -21,29 +25,16 @@ public class ActionEngine {
     public static final int ACTION_TIP = 5;
 
     public void setTTSEngine(TTSEngine e){
-        engine = e;
+        TTSE = e;
         twitSearch.setTTSEngine(e);
     }
 
     public void executeSpeech(String speech) {
-        engine.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
+        TTSE.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void executeGreeting() {
-        int rn = r.nextInt(6-0);
-        String g;
-
-        switch(rn) {
-            case 0: g = "Hello, student"; break;
-            case 1: g = "Hi, How are you today?"; break;
-            case 2: g = "Hello, would you like to learn something about cyber security?"; break;
-            case 3: g = "How's it going?"; break;
-            case 4: g = "Hey there"; break;
-            case 5: g = "Come and learn something about cyber security"; break;
-            default: g = "Hello"; break;
-        }
-
-        executeSpeech(g);
+        executeSpeech(greetingE.generateGreeting());
     }
 
     public void executeRandActivity() {
@@ -51,7 +42,7 @@ public class ActionEngine {
 
         switch(rn) {
             case ACTION_TWEET: executeTweetSearch(true); break;
-            case ACTION_RSS: executeRSS(); break;
+            case ACTION_RSS: executeRSS(true); break;
             case ACTION_JOKE: executeJoke(); break;
             case ACTION_QUIZ: executeQuiz(); break;
             case ACTION_PAGE: executePage(); break;
@@ -82,12 +73,23 @@ public class ActionEngine {
 
     }
 
-    public void executeRSS() {
-        executeSpeech("Check out the latest RSS feed I just saw.");
+    public void executeRSS(boolean speak) {
+        RSSEngine RSSFeed;
+        RSSFeed = new RSSEngine(null);
+        RSSFeed.fetchXML();
+
+        while(RSSFeed.processing);
+        if(!RSSFeed.isProcessingFailure()) {
+            executeSpeech("According to this RSS feed I just red from " + RSSFeed.getAuthor() +
+                    ", " + RSSFeed.getTitle());
+            Log.d("RSS FEED", "Author: " + RSSFeed.getAuthor() + "\nTitle: " + RSSFeed.getTitle()
+                    + "\nDescription: " + RSSFeed.getDescription());
+        }
+        else Log.d("RSS FEED", "RSS Failure");
     }
 
     public void executeJoke() {
-        executeSpeech("I heard this great joke the other day. A guy walks into a bar. Ouch.");
+        executeSpeech(jokeE.generateJoke());
     }
 
     public void executeQuiz() {
@@ -99,9 +101,6 @@ public class ActionEngine {
     }
 
     public void executeTip() {
-        executeSpeech("Here's a tip. Keep your computer safe by choosing a password that includes letters,"
-        + " numbers, and special characters. Try not to include birthdays, common names, or places." +
-        " Using obscure words mixed with an assortment of random numbers or symbols can better protect you" +
-        "against brute force password hacking attacks and will keep your personal information safe.");
+        executeSpeech(tipE.generateGreeting());
     }
 }
