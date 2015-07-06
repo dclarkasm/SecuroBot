@@ -33,9 +33,11 @@ public class TTSEngine implements TextToSpeech.OnInitListener{
     }
 
     public void speak(String string, int queueMode, HashMap<String, String> params){
+        while(t1.isSpeaking()); //wait until we finish speaking before saying something else
         if(!t1.isSpeaking()){
+            //TODO: Add a one shot timer here to wait for a few ms for the TTS engine to begin speaking
             t1.speak(string, queueMode, params);
-            while(t1.isSpeaking()); //wait while t1 speaks
+            while(t1.isSpeaking()); //wait until we finish speaking before saying something else
         }
     }
 }

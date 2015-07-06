@@ -16,4 +16,5 @@ x add text to speech
 - make a twitter account for the robot to post tweets
 - give quizzes and then when the user finishes it takes a picture of the user and publishes the picture via twitter in the form
 of a certificate
--
+- implement ActionsEngine to decide what actions to take for a trigger (quiz, fun fact, joke, RSS feed, etc)
+- add method for parsing only necessary data from twitter/RSS/webpage feeds (leave out links, hash tags, etc)

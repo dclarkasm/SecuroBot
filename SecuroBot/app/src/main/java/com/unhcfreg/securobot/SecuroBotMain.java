@@ -47,7 +47,9 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
 
     //TextToSpeech t1;
     TTSEngine t1;
-    TwitterEngine twitSearch = new TwitterEngine();
+    //TwitterEngine twitSearch = new TwitterEngine();
+    ActionEngine action = new ActionEngine();
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -209,8 +211,8 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         mHandler = new Handler();
         startRepeatingTask();
 
-        twitSearch.setTTSEngine(t1);
-        twitSearch.searchOnTwitter("cyber security");
+        action.setTTSEngine(t1);
+        action.executeTweetSearch(true);
     }
 
     @Override
@@ -319,7 +321,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         @Override
         public void loop() throws ConnectionLostException, InterruptedException {
             int re = r.nextInt(100-0); //random number between 0 and 100 for rotation enable
-            int ra = r.nextInt(2-0); //random number between 0 and 100 for rotation angle
+            int ra = r.nextInt(3-0); //random number between 0 and 100 for rotation angle
 
             if(re <= 1) {  //20% chance that the head will rotate
                 switch(ra){
@@ -349,18 +351,13 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                                 + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
                                 ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
                     );
-                    t1.speak("Hello, student", TextToSpeech.QUEUE_FLUSH, null);
 
-                    try{
-                        twitSearch.searchOnTwitter("cyber security");
-                        twitSearch.speakLatestTweet();
-                    }
-                    catch(Exception e) {
-                        Log.d("TWITTER", "Caught an exception!");
-                        e.printStackTrace();
-                    }
+                    action.executeGreeting();   //execute a random greeting
 
-                    iRSensors.initialize(measVal, measVolt);
+                    action.executeRandActivity();
+
+                    Log.d("IR SENSORS", "reinitializing...");
+                    initIR();
                 }
                 else {
                     led_.write(true);
@@ -368,15 +365,14 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                                // + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
                                // ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
                     );*/
-                    iRSensors.initialize(measVal, measVolt);
+                    //initIR();
                 }
             }
 
             Thread.sleep(100);
         }
 
-        public void initIR() throws ConnectionLostException, InterruptedException
-        {
+        public void initIR() throws ConnectionLostException, InterruptedException {
             float baseVal=0f, baseVolt=0f;
 
             for(int i=0; i<iRSensors.iSamples; i++) {
@@ -385,8 +381,9 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                 //Thread.sleep(5);
             }
             iRSensors.initialize(baseVal/iRSensors.iSamples, baseVolt/iRSensors.iSamples);
+            /*
             Log.d("INIT IR", "Base Val: " + baseVal/iRSensors.iSamples +
-                    ", base Volt: " + baseVolt/iRSensors.iSamples);
+                    ", base Volt: " + baseVolt/iRSensors.iSamples);*/
         }
 
         /**
