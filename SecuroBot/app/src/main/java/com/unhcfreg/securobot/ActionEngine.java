@@ -2,6 +2,8 @@ package com.unhcfreg.securobot;
 
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.View;
+import android.webkit.WebView;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -11,11 +13,16 @@ import java.util.Random;
  */
 public class ActionEngine {
     public TTSEngine TTSE;
+    private RSSEngine RSSFeed;
+    private QuizEngine quizE = new QuizEngine();
     private GreetingEngine greetingE = new GreetingEngine();
     private JokeEngine jokeE = new JokeEngine();
     private TipEngine tipE = new TipEngine();
     Random r = new Random();
     private TwitterEngine twitSearch = new TwitterEngine();
+    WebView webPageView;
+    public boolean displayPage = false;
+    public boolean displayQuiz = false;
 
     public static final int ACTION_TWEET = 0;
     public static final int ACTION_RSS = 1;
@@ -23,6 +30,14 @@ public class ActionEngine {
     public static final int ACTION_QUIZ = 3;
     public static final int ACTION_PAGE = 4;
     public static final int ACTION_TIP = 5;
+
+    public ActionEngine(TTSEngine e, WebView wv) {
+        setTTSEngine(e);
+        executeTweetSearch(false);
+        executeRSS(false);
+        webPageView = wv;
+        //wv.setVisibility(View.INVISIBLE);   //we already set this in the layout xml, but just incase
+    }
 
     public void setTTSEngine(TTSEngine e){
         TTSE = e;
@@ -74,7 +89,6 @@ public class ActionEngine {
     }
 
     public void executeRSS(boolean speak) {
-        RSSEngine RSSFeed;
         RSSFeed = new RSSEngine(null);
         RSSFeed.fetchXML();
 
@@ -93,11 +107,32 @@ public class ActionEngine {
     }
 
     public void executeQuiz() {
+        if(displayQuiz) displayQuiz = false;
         executeSpeech("Would you like to take a quiz?");
+        if(!displayQuiz) displayQuiz = true;
     }
 
     public void executePage() {
-        executeSpeech("Check out this article eye just red.");    //read is spelled red for phonetics same with I (eye)
+        if(displayPage) displayPage = false;
+        RSSFeed = new RSSEngine(null);
+        RSSFeed.fetchXML();
+
+        while(RSSFeed.processing);
+        if(!RSSFeed.isProcessingFailure()) {
+            executeSpeech("Check out this article eye just red from " + RSSFeed.getAuthor());    //read is spelled red for phonetics same with I (eye)
+            //webPageView.loadUrl(RSSFeed.getLink());
+            while(TTSE.t1.isSpeaking());
+            if(!displayPage) displayPage = true;
+            Log.d("WEB PAGE", "Author: " + RSSFeed.getAuthor() + "\nLink: " + RSSFeed.getLink());
+        }
+    }
+
+    public String getWebPage() {
+        return RSSFeed.getLink();
+    }
+
+    public String getQuiz() {
+        return quizE.generateQuiz();
     }
 
     public void executeTip() {

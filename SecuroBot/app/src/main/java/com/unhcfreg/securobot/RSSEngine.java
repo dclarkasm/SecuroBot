@@ -67,7 +67,7 @@ public class RSSEngine {
         int event;
         String text=null;
         boolean foundChannel=false, foundAuthor=false, foundItem=false,
-                foundTitle=false, foundDescription=false;
+                foundTitle=false, foundDescription=false, foundLink=false;
 
         try {
             event = myParser.getEventType();
@@ -103,6 +103,11 @@ public class RSSEngine {
                             foundTitle = true;
                             Log.d("RSS", "found title" );
                         }
+                        else if(name.equals("link") && foundChannel && foundAuthor &&
+                                foundItem && foundTitle && !foundDescription) {
+                            link = text;
+                            foundLink = true;
+                        }
                         else if(name.equals("description") && foundChannel && foundAuthor &&
                                 foundItem && foundTitle && !foundDescription) {
                             description = text;
@@ -112,7 +117,7 @@ public class RSSEngine {
                         break;
                     }
                 }
-                if(foundAuthor && foundChannel && foundDescription && foundItem && foundTitle) break;   //break if we found all the components to the latest RSS feed
+                if(foundAuthor && foundChannel && foundDescription && foundItem && foundTitle && foundLink) break;   //break if we found all the components to the latest RSS feed
                 event = myParser.next();
             }
         }

@@ -27,7 +27,7 @@ public class TipEngine {
 
             //from http://www.protectmyid.com/cyber-security
             "Before submitting credit card information online, look at the URL to ensure you're on a HTTPS" +
-            "(Hypertext Transfer Protocol Secure) site. Be wary if a site requires information that isn't " +
+            "(Hypertext Transfer Protocol Secure) site. Be wary if a site requires information that isnt " +
             "necessary for a transaction. Information security is more important than anything you could buy.",
 
             "With the proper software installed, stolen laptops can be tracked to a physical location if they " +
@@ -42,11 +42,11 @@ public class TipEngine {
             "Firewalls create a protective wall between your computer and the outside world. They come in two forms, " +
             "software firewalls that run on your personal computer and hardware firewalls that protect " +
             "a number of computers at the same time. Firewalls also ensure that unauthorized " +
-            "persons can’t gain access to your computer while you’re connected to the Internet. ",
+            "persons cant gain access to your computer while your connected to the Internet. ",
 
             "Disconnect your computer from the Internet when not in use. Disconnecting from the " +
-            "Internet when you’re not online lessens the chance that someone will be able to access " +
-            "your computer. And if you haven’t kept your anti-virus software up-to-date, or don’t have " +
+            "Internet when your not online lessens the chance that someone will be able to access " +
+            "your computer. And if you havent kept your anti-virus software up to date, or dont have " +
             "a firewall in place, someone could infect your computer or use it to harm someone else " +
             "on the Internet."
     };

@@ -4,6 +4,7 @@ import com.unhcfreg.securobot.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,9 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -48,7 +52,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     //TextToSpeech t1;
     TTSEngine t1;
     //TwitterEngine twitSearch = new TwitterEngine();
-    ActionEngine action = new ActionEngine();
+    ActionEngine action;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -85,18 +89,12 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     int rEResource;
     TimerTask timerTask;
     final Handler handler = new Handler();
-    Runnable runnable;
     private Handler mHandler;
     Random r = new Random();
-
-
-    void startRepeatingTask() {
-        runnable.run();
-    }
-
-    void stopRepeatingTask() {
-        mHandler.removeCallbacks(runnable);
-    }
+    WebView webPageView;
+    WebView webQuizView;
+    boolean loadingFinished = true;
+    boolean redirect = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,49 +169,87 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
             }
         });
 
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                int il = r.nextInt(0+100);
-                int ir = r.nextInt(0+100);
+        webPageView = (WebView) findViewById(R.id.webview);
+        webQuizView = (WebView) findViewById(R.id.webview);
+        WebSettings webQuizSettings = webQuizView.getSettings();
+        webQuizSettings.setJavaScriptEnabled(true);
+        webPageView.setVisibility(View.INVISIBLE);
 
-                if(il>50) {
-
-                if(lEResource == R.drawable.blueeyesclosedleft) {
-                    lEResource = R.drawable.blueeyesopenleft;
-                }
-                else lEResource = R.drawable.blueeyesclosedleft;
-                leftEye.setImageResource(lEResource);
-                }
-
-                if(ir>50) {
-
-                if(rEResource == R.drawable.blueeyesclosedright) {
-                    rEResource = R.drawable.blueeyesopenright;
-                }
-                else rEResource = R.drawable.blueeyesclosedright;
-                rightEye.setImageResource(rEResource);
-                }
-            }
-
-            public void wait(int time) {
-                Handler handler = new Handler();
-
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //do nothing
-                    }
-                }, time); //adding one sec delay
-            }
-
-        };
+        action = new ActionEngine(t1, webPageView);
         mHandler = new Handler();
-        startRepeatingTask();
 
-        action.setTTSEngine(t1);
-        action.executeTweetSearch(false);
+        startRepeatingTask();
     }
+
+    void startRepeatingTask() {
+        runnable.run();
+        webpageRunnable.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(runnable);
+        mHandler.removeCallbacks(webpageRunnable);
+    }
+
+    Runnable runnable = new Runnable() {
+    @Override
+    public void run() {
+        int il = r.nextInt(0+100);
+        int ir = r.nextInt(0+100);
+
+        if(il>50) {
+
+            if(lEResource == R.drawable.blueeyesclosedleft) {
+                lEResource = R.drawable.blueeyesopenleft;
+            }
+            else {
+                lEResource = R.drawable.blueeyesclosedleft;
+            }
+            leftEye.setImageResource(lEResource);
+        }
+
+        if(ir>50) {
+
+            if(rEResource == R.drawable.blueeyesclosedright) {
+                rEResource = R.drawable.blueeyesopenright;
+            }
+            else rEResource = R.drawable.blueeyesclosedright;
+            rightEye.setImageResource(rEResource);
+        }
+        mHandler.postDelayed(runnable, 5000);
+    }
+};
+
+    Runnable webpageRunnable = new Runnable() {
+        String currentPage = "";
+        String currentQuiz = "";
+
+        @Override
+        public void run() {
+            if(action.displayPage && webPageView.getVisibility()==View.INVISIBLE) {
+                webQuizView.setVisibility(View.INVISIBLE);
+                currentPage = action.getWebPage();
+                webPageView.loadUrl(currentPage);
+                webPageView.setVisibility(View.VISIBLE);
+            }
+            else if(action.displayQuiz && webQuizView.getVisibility()==View.INVISIBLE) {
+                webPageView.setVisibility(View.INVISIBLE);
+                currentQuiz = action.getQuiz();
+                webPageView.loadUrl(currentQuiz);
+                webQuizView.setVisibility(View.VISIBLE);
+            }
+            else if(!action.displayPage && !action.displayQuiz &&
+                    (webPageView.getVisibility()==View.VISIBLE ||
+                    webQuizView.getVisibility()==View.VISIBLE)) {
+                webPageView.setVisibility(View.INVISIBLE);
+                webQuizView.setVisibility(View.INVISIBLE);
+                webPageView.loadUrl(currentQuiz);
+                webPageView.loadUrl(currentPage);
+            }
+
+            mHandler.postDelayed(webpageRunnable, 100);
+        }
+    };
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -348,24 +384,24 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                 if(iRSensors.motionDetect(measVal, measVolt)) {
                     led_.write(false);
                     Log.d("MOTION", "Detected motion!"
-                                + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
-                                ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                                    + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                                    ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
                     );
 
                     action.executeGreeting();   //execute a random greeting
 
-                    action.executeRandActivity();
+                    action.displayPage = false;
+                    action.displayQuiz = false;
+                    //action.executeRandActivity();
+                    int rn = r.nextInt(2-0);
+                    if(rn == 1) action.executeQuiz();
+                    else action.executePage();
 
                     Log.d("IR SENSORS", "reinitializing...");
                     initIR();
                 }
                 else {
                     led_.write(true);
-                    /*Log.d("NO MOTION", "Detected NO motion!"
-                               // + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
-                               // ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
-                    );*/
-                    //initIR();
                 }
             }
 
