@@ -90,9 +90,10 @@
     <orderEntry type="library" exported="" name="ioiolibandroid" level="project" />
     <orderEntry type="library" exported="" name="twitpic4j" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.0.0" level="project" />
+    <orderEntry type="library" exported="" name="twitter4j-core-4.0.4" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="ioiolibaccessory" level="project" />
-    <orderEntry type="library" exported="" name="twitter4j-core-3.0.4-SNAPSHOT" level="project" />
     <orderEntry type="library" exported="" name="ioiolibandroiddevice" level="project" />
   </component>
 </module>
+

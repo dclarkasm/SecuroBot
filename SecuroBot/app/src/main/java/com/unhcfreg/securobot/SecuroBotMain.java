@@ -393,9 +393,14 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                     action.displayPage = false;
                     action.displayQuiz = false;
                     //action.executeRandActivity();
+                    /*
                     int rn = r.nextInt(2-0);
                     if(rn == 1) action.executeQuiz();
                     else action.executePage();
+                    */
+                    //action.executeMakeTweet("IR sensor voltage: " + measVolt);
+                    //action.executeTweetSearch(true);
+                    action.executeTimelineSearch(true);
 
                     Log.d("IR SENSORS", "reinitializing...");
                     initIR();

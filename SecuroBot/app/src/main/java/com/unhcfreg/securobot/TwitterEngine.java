@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +12,16 @@ import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Status;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.User;
 import twitter4j.auth.OAuth2Token;
 import twitter4j.conf.ConfigurationBuilder;
+import twitter4j.auth.RequestToken;
+import twitter4j.auth.AccessToken;
+import java.io.InputStreamReader;
+
+import java.io.BufferedReader;
 
 /**
  * Created by Devon on 7/5/2015.
@@ -21,9 +29,64 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterEngine {
     public TTSEngine engine;
     private String latestTweet;
+    private String latestStatus;
+    Twitter twitter;
+    private static final String TWITTER_KEY = "JlxXwwVxSH8KuiqIktrNE2VQp";
+    private static final String TWITTER_SECRET = "4m1kuoWKOrHDLX7CulAs6uAzEKpjFUWUkweWFunQCXlZCVpGXm";
+    private static final String TWITTER_TOKEN = "3364737443-ilf4qCoDyaKcsD5fZME80qGpwmfMiv1yDgMaoJM";
+    private static final String TOKEN_SECRET = "YLZbvOwFOSa6akO50Pur3aTS059QTl5qUL4c8BScwHKA6";
+
+
+    public TwitterEngine() {
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(TWITTER_KEY)
+                .setOAuthConsumerSecret(TWITTER_SECRET)
+                .setOAuthAccessToken(TWITTER_TOKEN)
+                .setOAuthAccessTokenSecret(TOKEN_SECRET);
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        twitter = tf.getInstance();
+    }
 
     public void searchOnTwitter(String text) {
-        new SearchOnTwitter().execute(text);
+        try {
+            Query query = new Query(text);
+            QueryResult result;
+            do {
+                result = twitter.search(query);
+                List<Status> tweets = result.getTweets();
+                /*
+                for (Status tweet : tweets) {
+                    Log.d("Twitter", "@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                    latestTweet = tweet.getUser().getScreenName() + " says " + tweet.getText();
+                }
+                */
+                //The latest tweet is in the last spot in the list
+                Log.d("Twitter", "@" + tweets.get(0).getUser().getScreenName() + " - " + tweets.get(0).getText());
+                latestTweet = tweets.get(0).getUser().getScreenName() + " says " + tweets.get(0).getText();
+            } while ((query = result.nextQuery()) != null);
+            return;
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            Log.d("Twitter", "Failed to search tweets: " + te.getMessage());
+            return;
+        }
+    }
+
+    public void getTimeline() {
+        try {
+            User user = twitter.verifyCredentials();
+            List<Status> statuses = twitter.getHomeTimeline();
+            Log.d("Twitter", "Showing @" + user.getScreenName() + "'s home timeline.");
+            for (Status status : statuses) {
+                Log.d("Twitter", "@" + status.getUser().getScreenName() + " - " + status.getText());
+            }
+            latestStatus = statuses.get(0).getText();
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            Log.d("Twitter", "Failed to get timeline: " + te.getMessage());
+            return;
+        }
     }
 
     public void setTTSEngine(TTSEngine e) {
@@ -34,83 +97,62 @@ public class TwitterEngine {
         engine.speak(latestTweet, TextToSpeech.QUEUE_FLUSH, null);
     }
 
-    class SearchOnTwitter extends AsyncTask<String, Void, Integer> {
-        ArrayList<Tweet> tweets;
-        final int SUCCESS = 0;
-        final int FAILURE = SUCCESS + 1;
-        private final String TWIT_CONS_KEY = "r5Z9pl8sE6TOuuFGCvea0ySwF";
-        private final String TWIT_CONS_SEC_KEY = "Qhthb9U8FRErYKhtq0Bl09M0uJMmNAizW893c01Ye2m6apvYPk";
-        boolean searching = false;
+    public void speakLatestStatus() {
+        engine.speak(latestStatus, TextToSpeech.QUEUE_FLUSH, null);
+    }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Integer doInBackground(String... params) {
+    public void updateStatus(String text) {
+        try {
             try {
-                searching = true;
-                ConfigurationBuilder builder = new ConfigurationBuilder();
-                builder.setUseSSL(true);
-                builder.setApplicationOnlyAuthEnabled(true);
-                builder.setOAuthConsumerKey(TWIT_CONS_KEY);
-                builder.setOAuthConsumerSecret(TWIT_CONS_SEC_KEY);
+                // get request token.
+                // this will throw IllegalStateException if access token is already available
+                RequestToken requestToken = twitter.getOAuthRequestToken();
+                Log.d("Twitter", "Got request token.");
+                Log.d("Twitter", "Request token: " + requestToken.getToken());
+                Log.d("Twitter", "Request token secret: " + requestToken.getTokenSecret());
+                AccessToken accessToken = null;
 
-                OAuth2Token token = new TwitterFactory(builder.build()).getInstance().getOAuth2Token();
-
-                builder = new ConfigurationBuilder();
-                builder.setUseSSL(true);
-                builder.setApplicationOnlyAuthEnabled(true);
-                builder.setOAuthConsumerKey(TWIT_CONS_KEY);
-                builder.setOAuthConsumerSecret(TWIT_CONS_SEC_KEY);
-                builder.setOAuth2TokenType(token.getTokenType());
-                builder.setOAuth2AccessToken(token.getAccessToken());
-
-                Twitter twitter = new TwitterFactory(builder.build()).getInstance();
-
-                Query query = new Query(params[0]);
-                // YOu can set the count of maximum records here
-                query.setCount(1);
-                QueryResult result;
-                result = twitter.search(query);
-                List<twitter4j.Status> tweets = result.getTweets();
-                StringBuilder str = new StringBuilder();
-                if (tweets != null) {
-                    this.tweets = new ArrayList<Tweet>();
-                    for (twitter4j.Status tweet : tweets) {
-                        str.append("@" + tweet.getUser().getScreenName() + " - " + tweet.getText() + "\n");
-                        System.out.println(str);
-                        this.tweets.add(new Tweet("@" + tweet.getUser().getScreenName(), tweet.getText()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                while (null == accessToken) {
+                    Log.d("Twitter", "Open the following URL and grant access to your account:");
+                    Log.d("Twitter", requestToken.getAuthorizationURL());
+                    Log.d("Twitter", "Enter the PIN(if available) and hit enter after you granted access.[PIN]:");
+                    String pin = br.readLine();
+                    try {
+                        if (pin.length() > 0) {
+                            accessToken = twitter.getOAuthAccessToken(requestToken, pin);
+                        } else {
+                            accessToken = twitter.getOAuthAccessToken(requestToken);
+                        }
+                    } catch (TwitterException te) {
+                        if (401 == te.getStatusCode()) {
+                            Log.d("Twitter", "Unable to get the access token.");
+                        } else {
+                            te.printStackTrace();
+                        }
                     }
-                    return SUCCESS;
                 }
-            } catch (Exception e) {
-                searching = false;
-                e.printStackTrace();
-            }
-
-            return FAILURE;
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            super.onPostExecute(result);
-            if (result == SUCCESS) {
-                for(Tweet t : tweets)
-                {
-                    latestTweet = t.getTweetBy() + " says " + t.getTweet();
-                    Log.d("Twater", latestTweet);
-                    //engine.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                Log.d("Twitter", "Got access token.");
+                Log.d("Twitter", "Access token: " + accessToken.getToken());
+                Log.d("Twitter", "Access token secret: " + accessToken.getTokenSecret());
+            } catch (IllegalStateException ie) {
+                // access token is already available, or consumer key/secret is not set.
+                if (!twitter.getAuthorization().isEnabled()) {
+                    Log.d("Twitter", "OAuth consumer key/secret is not set.");
+                    return;
                 }
-            } else {
-                Log.d("Twater", "Search was not successful");
             }
-            searching = false;
-        }
-
-        public boolean isSearching() {
-            return searching;
+            Status status = twitter.updateStatus(text);
+            Log.d("Twitter", "Successfully updated the status to [" + status.getText() + "].");
+            return;
+        } catch (TwitterException te) {
+            te.printStackTrace();
+            Log.d("Twitter", "Failed to get timeline: " + te.getMessage());
+            return;
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            Log.d("Twitter", "Failed to read the system input.");
+            return;
         }
     }
 }

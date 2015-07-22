@@ -19,7 +19,7 @@ public class ActionEngine {
     private JokeEngine jokeE = new JokeEngine();
     private TipEngine tipE = new TipEngine();
     Random r = new Random();
-    private TwitterEngine twitSearch = new TwitterEngine();
+    private TwitterEngine twitE = new TwitterEngine();
     WebView webPageView;
     public boolean displayPage = false;
     public boolean displayQuiz = false;
@@ -41,7 +41,7 @@ public class ActionEngine {
 
     public void setTTSEngine(TTSEngine e){
         TTSE = e;
-        twitSearch.setTTSEngine(e);
+        twitE.setTTSEngine(e);
     }
 
     public void executeSpeech(String speech) {
@@ -72,20 +72,34 @@ public class ActionEngine {
 
     public void executeTweetSearch(String search, boolean speak) {
         try{
-            twitSearch.searchOnTwitter(search);
+            twitE.searchOnTwitter(search);
             if(speak) {
                 executeSpeech("I just red this on twitter.");
-                twitSearch.speakLatestTweet();
+                twitE.speakLatestTweet();
             }
         }
         catch(Exception e) {
-            Log.d("TWITTER", "Caught an exception!");
+            Log.d("TWITTER", "Caught an exception! - execute tweet search");
             e.printStackTrace();
         }
     }
 
-    public void executeMakeTweet() {
+    public void executeTimelineSearch(boolean speak) {
+        twitE.getTimeline();
+        try{
+            if(speak) {
+                executeSpeech("Check out my latest status update. ");
+                twitE.speakLatestStatus();
+            }
+        }
+        catch(Exception e) {
+            Log.d("TWITTER", "Caught an exception! - execute timeline search");
+            e.printStackTrace();
+        }
+    }
 
+    public void executeMakeTweet(String text) {
+        twitE.updateStatus(text);
     }
 
     public void executeRSS(boolean speak) {

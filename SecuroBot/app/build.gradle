@@ -29,4 +29,5 @@ dependencies {
     compile files('libs/ioiolibandroid.jar')
     compile files('libs/ioiolibandroiddevice.jar')
     compile files('libs/ioiolibbt.jar')
+    compile files('libs/twitter4j-core-4.0.4.jar')
 }
