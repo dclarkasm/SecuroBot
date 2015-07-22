@@ -1,11 +1,7 @@
 Twitter accounts:
-
-The account used by the robot itself to post tweets:
 Gmail: UNHSecuroBot@gmail.com
 password: nhBlue22
-phone: (860) 661-4449 (skype)
 
-The account used by humans to tweet at the robot providing it with content (new jokes, RSS feeds, twitter updates, quizes, etc.):
 Gmail: unhsbotmanager@gmail.com
 password: nhBlue22
 

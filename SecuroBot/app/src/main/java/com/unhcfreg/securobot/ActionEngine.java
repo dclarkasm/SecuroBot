@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.twitter.sdk.android.core.TwitterSession;
-
 import java.util.HashMap;
 import java.util.Random;
 
@@ -21,7 +19,7 @@ public class ActionEngine {
     private JokeEngine jokeE = new JokeEngine();
     private TipEngine tipE = new TipEngine();
     Random r = new Random();
-    private TwitterEngine TwitE;
+    private TwitterEngine twitSearch = new TwitterEngine();
     WebView webPageView;
     public boolean displayPage = false;
     public boolean displayQuiz = false;
@@ -38,17 +36,16 @@ public class ActionEngine {
         executeTweetSearch(false);
         executeRSS(false);
         webPageView = wv;
-        TwitE = new TwitterEngine();
         //wv.setVisibility(View.INVISIBLE);   //we already set this in the layout xml, but just incase
     }
 
     public void setTTSEngine(TTSEngine e){
         TTSE = e;
-        TwitE.setTTSEngine(e);
+        twitSearch.setTTSEngine(e);
     }
 
     public void executeSpeech(String speech) {
-        TTSE.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "action");
+        TTSE.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void executeGreeting() {
@@ -75,10 +72,10 @@ public class ActionEngine {
 
     public void executeTweetSearch(String search, boolean speak) {
         try{
-            TwitE.searchOnTwitter(search);
+            twitSearch.searchOnTwitter(search);
             if(speak) {
                 executeSpeech("I just red this on twitter.");
-                TwitE.speakLatestTweet();
+                twitSearch.speakLatestTweet();
             }
         }
         catch(Exception e) {
@@ -87,8 +84,8 @@ public class ActionEngine {
         }
     }
 
-    public void executeMakeTweet(String text) {
-        TwitE.updateStatus(text);
+    public void executeMakeTweet() {
+
     }
 
     public void executeRSS(boolean speak) {
@@ -96,7 +93,7 @@ public class ActionEngine {
         RSSFeed.fetchXML();
 
         while(RSSFeed.processing);
-        if(!RSSFeed.isProcessingFailure() && speak) {
+        if(!RSSFeed.isProcessingFailure()) {
             executeSpeech("According to this RSS feed I just red from " + RSSFeed.getAuthor() +
                     ", " + RSSFeed.getTitle());
             Log.d("RSS FEED", "Author: " + RSSFeed.getAuthor() + "\nTitle: " + RSSFeed.getTitle()
