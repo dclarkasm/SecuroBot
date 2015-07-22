@@ -2,6 +2,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 Twitter accounts:
 
 The account used by the robot itself to post tweets:
@@ -47,6 +48,9 @@ TODO:
 =======
 TODO:
 >>>>>>> parent of 6efd498... updated notes
+=======
+TODO:
+>>>>>>> parent of 6efd498... updated notes
 x split the eyes into right/left open/closed
 x add text to speech
 x add android ioio libraries
@@ -79,7 +83,11 @@ x add webpage crawler - use links associated with RSS feeds to get URLs for the 
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 - add a way for users to type their twitter handle to forward links to them for them to read more
+=======
+- add a way for users to type their twitter handle to forward links to them for them to read more
+>>>>>>> parent of 6efd498... updated notes
 =======
 - add a way for users to type their twitter handle to forward links to them for them to read more
 >>>>>>> parent of 6efd498... updated notes
