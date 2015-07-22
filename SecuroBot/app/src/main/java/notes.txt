@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Twitter accounts:
 
 The account used by the robot itself to post tweets:
@@ -31,8 +32,10 @@ TODO: (Orginized in order of priority (most important first
     if no command is found, say "I dont know what you said, but <name> says <something>" random name(50 cent or something stupid), latest tweet
 
 TODO COMPLETED TASKS:
+=======
+TODO:
+>>>>>>> parent of 6efd498... updated notes
 x split the eyes into right/left open/closed
-x implement ActionEngine to decide what actions to take for a trigger (quiz, fun fact, joke, RSS feed, etc)
 x add text to speech
 x add android ioio libraries
 
@@ -44,8 +47,21 @@ x add tips
     - use twitter for tip data so that the tips database can be updated in the future
 - work on developing the overall data structure of app decision making/functions
 x add webpage crawler - use links associated with RSS feeds to get URLs for the articles
-x add quizes
+- add quizes
     when the user finishes it takes a picture of the user and publishes the picture via twitter in the form
     of a certificate
     - use onlinequizecreator.com to create the quizes
     - online quiz creator uses javascript so I should be able to interface between the page and the app - figure out how to do this
+- add surveys regarding cyber security
+    - surveys results are compiled and tweeted
+- add speech to text - (have specific voice commands like:
+    "Hey <name>" - gets the attention of the robot. The following commands can then be used:
+    "tell me a joke" - recognizes key word joke, calls the joke function and tells a random joke
+    "whats new/up?/how is it going?" - recognizes this and chooses a security topic at random (new twitter feed, joke, RSS, security tip, trending article)
+    "tell me something about computer security" - recognizes something and computer security and gives a tip about personal computer security
+    if no command is found, say "I dont know what you said, but <name> says <something>" random name(50 cent or something stupid), latest tweet
+- make a twitter account for the robot to post tweets
+- implement ActionsEngine to decide what actions to take for a trigger (quiz, fun fact, joke, RSS feed, etc)
+- add method for parsing only necessary data from twitter/RSS/webpage feeds (leave out links, hash-tags, etc)
+- add an interaction timer - the timer automatically quits out of activities if there is no user action taken after X time
+- add a way for users to type their twitter handle to forward links to them for them to read more
