@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 Twitter accounts:
 
 The account used by the robot itself to post tweets:
@@ -36,21 +31,6 @@ TODO: (Orginized in order of priority (most important first
     if no command is found, say "I dont know what you said, but <name> says <something>" random name(50 cent or something stupid), latest tweet
 
 TODO COMPLETED TASKS:
-=======
-TODO:
->>>>>>> parent of 6efd498... updated notes
-=======
-TODO:
->>>>>>> parent of 6efd498... updated notes
-=======
-TODO:
->>>>>>> parent of 6efd498... updated notes
-=======
-TODO:
->>>>>>> parent of 6efd498... updated notes
-=======
-TODO:
->>>>>>> parent of 6efd498... updated notes
 x split the eyes into right/left open/closed
 x add text to speech
 x add android ioio libraries
@@ -80,20 +60,4 @@ x add webpage crawler - use links associated with RSS feeds to get URLs for the 
 - implement ActionsEngine to decide what actions to take for a trigger (quiz, fun fact, joke, RSS feed, etc)
 - add method for parsing only necessary data from twitter/RSS/webpage feeds (leave out links, hash-tags, etc)
 - add an interaction timer - the timer automatically quits out of activities if there is no user action taken after X time
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 - add a way for users to type their twitter handle to forward links to them for them to read more
-=======
-- add a way for users to type their twitter handle to forward links to them for them to read more
->>>>>>> parent of 6efd498... updated notes
-=======
-- add a way for users to type their twitter handle to forward links to them for them to read more
->>>>>>> parent of 6efd498... updated notes
-=======
-- add a way for users to type their twitter handle to forward links to them for them to read more
->>>>>>> parent of 6efd498... updated notes
-=======
-- add a way for users to type their twitter handle to forward links to them for them to read more
->>>>>>> parent of 6efd498... updated notes
