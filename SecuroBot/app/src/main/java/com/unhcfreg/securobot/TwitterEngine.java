@@ -4,36 +4,76 @@ import android.os.AsyncTask;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Status;
+import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.OAuth2Token;
 import twitter4j.conf.ConfigurationBuilder;
-
+/*
+import io.fabric.sdk.android.Fabric;
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+*/
 /**
  * Created by Devon on 7/5/2015.
  */
 public class TwitterEngine {
     public TTSEngine engine;
+    private String username;
+    private String authToken;
     private String latestTweet;
+    private static final String TWITTER_KEY = "cZLyhojgoAjGrEGxpd8qH047I";
+    private static final String TWITTER_SECRET = "LHPmstdmyp4o0tHbz8X9jKAqCpa9pC3fHBPaLMXMwtYu8vss6o";
+    private static final String TWITTER_TOKEN = "3364737443-ilf4qCoDyaKcsD5fZME80qGpwmfMiv1yDgMaoJM";
+    private static final String TOKEN_SECRET = "YLZbvOwFOSa6akO50Pur3aTS059QTl5qUL4c8BScwHKA6";
+
+    public TwitterEngine() {
+
+    }
 
     public void searchOnTwitter(String text) {
-        new SearchOnTwitter().execute(text);
+        //new SearchOnTwitter().execute(text);
     }
 
     public void setTTSEngine(TTSEngine e) {
-        engine = e;
+        this.engine = e;
     }
 
     public void speakLatestTweet(){
-        engine.speak(latestTweet, TextToSpeech.QUEUE_FLUSH, null);
+        engine.speak(latestTweet, TextToSpeech.QUEUE_FLUSH, null, "tweet");
     }
 
+    public void updateStatus(String text) {
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(TWITTER_KEY)
+                .setOAuthConsumerSecret(TWITTER_SECRET)
+                .setOAuthAccessToken(TWITTER_TOKEN)
+                .setOAuthAccessTokenSecret(TOKEN_SECRET);
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        Twitter twitter = tf.getInstance();
+        StatusUpdate su;
+        try{
+            Status status = twitter.updateStatus(text);
+            Log.d("TwitterTest","Successfully updated the status to [" + status.getText() + "].");
+        }
+        catch(Exception e){
+            Log.d("TwitterTest", "Failed to update status");
+            e.printStackTrace();
+        }
+    }
+
+/*
     class SearchOnTwitter extends AsyncTask<String, Void, Integer> {
         ArrayList<Tweet> tweets;
         final int SUCCESS = 0;
@@ -113,5 +153,6 @@ public class TwitterEngine {
             return searching;
         }
     }
+*/
 }
 

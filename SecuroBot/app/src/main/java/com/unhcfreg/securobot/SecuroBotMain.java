@@ -1,9 +1,12 @@
 package com.unhcfreg.securobot;
 
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.unhcfreg.securobot.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -19,6 +22,7 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,13 +36,28 @@ import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
+
+import android.content.Intent;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+
+/*
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+/*
 import twitter4j.Query;
 import twitter4j.QueryResult;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.OAuth2Token;
 import twitter4j.conf.ConfigurationBuilder;
-
+*/
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -48,6 +67,13 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInitListener
 {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "cZLyhojgoAjGrEGxpd8qH047I";
+    private static final String TWITTER_SECRET = "LHPmstdmyp4o0tHbz8X9jKAqCpa9pC3fHBPaLMXMwtYu8vss6o";
+    //private TwitterLoginButton loginButton;
+
+    //TwitterSession ts;
 
     //TextToSpeech t1;
     TTSEngine t1;
@@ -99,6 +125,9 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Twitter(authConfig));
+        //loginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
 
         setContentView(R.layout.activity_securo_bot_main);
 
@@ -174,11 +203,42 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         WebSettings webQuizSettings = webQuizView.getSettings();
         webQuizSettings.setJavaScriptEnabled(true);
         webPageView.setVisibility(View.INVISIBLE);
-
+        if(t1 == null) Log.d("TTS", "T1 is null");
         action = new ActionEngine(t1, webPageView);
         mHandler = new Handler();
 
         startRepeatingTask();
+
+        /*
+        loginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
+        loginButton.setCallback(new Callback<TwitterSession>() {
+            @Override
+            public void success(Result<TwitterSession> result) {
+                // Do something with result, which provides a TwitterSession for making API calls
+                String output = "Status: " +
+                        "Your login was successful " +
+                        result.data.getUserName() +
+                        "\nAuth Token Received: " +
+                        result.data.getAuthToken().token;
+                Log.d("TwitterAuth", output);
+                //ts = Twitter.getSessionManager().getActiveSession();
+
+            }
+
+            @Override
+            public void failure(TwitterException exception) {
+                // Do something on failure
+                Log.d("TwitterAuth", "Authentication failed");
+                exception.printStackTrace();
+            }
+        });
+        */
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //loginButton.onActivityResult(requestCode, resultCode, data);
     }
 
     void startRepeatingTask() {
@@ -231,12 +291,14 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                 currentPage = action.getWebPage();
                 webPageView.loadUrl(currentPage);
                 webPageView.setVisibility(View.VISIBLE);
+                action.executeMakeTweet("Just loaded a page");
             }
             else if(action.displayQuiz && webQuizView.getVisibility()==View.INVISIBLE) {
                 webPageView.setVisibility(View.INVISIBLE);
                 currentQuiz = action.getQuiz();
                 webPageView.loadUrl(currentQuiz);
                 webQuizView.setVisibility(View.VISIBLE);
+                action.executeMakeTweet("Just loaded a quiz");
             }
             else if(!action.displayPage && !action.displayQuiz &&
                     (webPageView.getVisibility()==View.VISIBLE ||

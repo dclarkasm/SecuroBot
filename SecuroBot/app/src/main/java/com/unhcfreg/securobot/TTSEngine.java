@@ -1,6 +1,7 @@
 package com.unhcfreg.securobot;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
@@ -32,11 +33,11 @@ public class TTSEngine implements TextToSpeech.OnInitListener{
         }
     }
 
-    public void speak(String string, int queueMode, HashMap<String, String> params){
+    public void speak(String string, int queueMode, Bundle params, String UtteranceId){
         while(t1.isSpeaking()); //wait until we finish speaking before saying something else
         if(!t1.isSpeaking()){
             //TODO: Add a one shot timer here to wait for a few ms for the TTS engine to begin speaking
-            t1.speak(string, queueMode, params);
+            t1.speak(string, queueMode, params, UtteranceId);
             while(t1.isSpeaking()); //wait until we finish speaking before saying something else
         }
     }
