@@ -87,14 +87,10 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     ImageView rightEye;
     int lEResource;
     int rEResource;
-    TimerTask timerTask;
-    final Handler handler = new Handler();
     private Handler mHandler;
     Random r = new Random();
     WebView webPageView;
     WebView webQuizView;
-    boolean loadingFinished = true;
-    boolean redirect = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,11 +180,13 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     void startRepeatingTask() {
         runnable.run();
         webpageRunnable.run();
+        fetchContent.run();
     }
 
     void stopRepeatingTask() {
         mHandler.removeCallbacks(runnable);
         mHandler.removeCallbacks(webpageRunnable);
+        mHandler.removeCallbacks(fetchContent);
     }
 
     Runnable runnable = new Runnable() {
@@ -248,6 +246,14 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
             }
 
             mHandler.postDelayed(webpageRunnable, 100);
+        }
+    };
+
+    Runnable fetchContent = new Runnable() {
+        @Override
+        public void run() {
+            //action.fetchContent();
+            mHandler.postDelayed(fetchContent, 930000); //search content every 15.5 min (allow for 15 min twitter cool down
         }
     };
 

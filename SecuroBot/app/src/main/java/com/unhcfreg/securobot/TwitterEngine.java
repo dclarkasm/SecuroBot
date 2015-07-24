@@ -32,14 +32,14 @@ public class TwitterEngine {
     //private String latestStatus;
     //private List<Status> tweetlist;
     //private List<Status> timeline;
-    private ArrayList<Tweet> parsedTweets = new ArrayList<Tweet>(); //list of the most recent random tweets for speaking (parsed)
+    private ArrayList<String> parsedTweets = new ArrayList<String>(); //list of the most recent random tweets for speaking (parsed)
+    private ArrayList<Tweet> parsedRandTweets = new ArrayList<Tweet>(); //list of the most recent random tweets for speaking (parsed)
     private ArrayList<Tweet> parsedStatuses = new ArrayList<Tweet>(); //list of the most recent status updates for speaking (parsed)
     Twitter twitter;
     private static final String TWITTER_KEY = "JlxXwwVxSH8KuiqIktrNE2VQp";
     private static final String TWITTER_SECRET = "4m1kuoWKOrHDLX7CulAs6uAzEKpjFUWUkweWFunQCXlZCVpGXm";
     private static final String TWITTER_TOKEN = "3364737443-ilf4qCoDyaKcsD5fZME80qGpwmfMiv1yDgMaoJM";
     private static final String TOKEN_SECRET = "YLZbvOwFOSa6akO50Pur3aTS059QTl5qUL4c8BScwHKA6";
-
 
     public TwitterEngine() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -52,7 +52,7 @@ public class TwitterEngine {
         twitter = tf.getInstance();
     }
 
-    public void searchOnTwitter(String text) {
+    public void searchOnTwitter(String text) {  //for searching for random things on twitter
         try {
             Query query = new Query(text);
             QueryResult result;
@@ -61,7 +61,7 @@ public class TwitterEngine {
             //The latest tweet is in the first spot in the list
             Log.d("Twitter", "@" + tweets.get(0).getUser().getScreenName() + " - " + tweets.get(0).getText());
             for(int i=0; i<10 && i<tweets.size(); i++) {
-                parsedTweets.add(new Tweet(tweets.get(i)));
+                parsedRandTweets.add(new Tweet(tweets.get(i)));
             }
         } catch (TwitterException te) {
             te.printStackTrace();
@@ -76,7 +76,11 @@ public class TwitterEngine {
             Log.d("Twitter", "Showing @" + user.getScreenName() + "'s home timeline.");
             for (Status status : statuses) {
                 Log.d("Twitter", "@" + status.getUser().getScreenName() + " - " + status.getText());
-                parsedStatuses.add(new Tweet(status));
+                Tweet newTweet = new Tweet(status);
+                parsedStatuses.add(newTweet);
+                if(newTweet.getContentType()==Tweet.SECUROBOT_RT) {     //automatically add retweets to the content we want to speak
+                    parsedTweets.add(newTweet.getTweetBy() + " says " + newTweet.getContent());
+                }
             }
         } catch (TwitterException te) {
             te.printStackTrace();
@@ -85,13 +89,23 @@ public class TwitterEngine {
         }
     }
 
+    public ArrayList<String> getContent(final int contentType) {
+        ArrayList<String> contentArr = new ArrayList<String>();
+        for(Tweet t : parsedStatuses) {
+            String content = t.getContentByType(contentType);
+            if(content!=null){
+                contentArr.add(content);
+            }
+        }
+        return contentArr;
+    }
+
     public void setTTSEngine(TTSEngine e) {
         engine = e;
     }
 
     public void speakLatestTweet(){
-        engine.speak(parsedTweets.get(0).getTweetBy() + " says " +
-                parsedTweets.get(0).getTweet(), TextToSpeech.QUEUE_FLUSH, null);
+        engine.speak(parsedTweets.get(0), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void speakLatestStatus() {

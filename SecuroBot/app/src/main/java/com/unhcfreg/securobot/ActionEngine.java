@@ -18,8 +18,8 @@ public class ActionEngine {
     private GreetingEngine greetingE = new GreetingEngine();
     private JokeEngine jokeE = new JokeEngine();
     private TipEngine tipE = new TipEngine();
-    Random r = new Random();
     private TwitterEngine twitE = new TwitterEngine();
+    Random r = new Random();
     WebView webPageView;
     public boolean displayPage = false;
     public boolean displayQuiz = false;
@@ -36,6 +36,7 @@ public class ActionEngine {
         executeTweetSearch(false);
         executeRSS(false);
         webPageView = wv;
+        fetchContent();
         //wv.setVisibility(View.INVISIBLE);   //we already set this in the layout xml, but just incase
     }
 
@@ -151,5 +152,21 @@ public class ActionEngine {
 
     public void executeTip() {
         executeSpeech(tipE.generateGreeting());
+    }
+
+    /*
+    public static final int ACTION_TWEET = 0;
+    public static final int ACTION_RSS = 1;
+    public static final int ACTION_JOKE = 2;
+    public static final int ACTION_QUIZ = 3;
+    public static final int ACTION_PAGE = 4;
+    public static final int ACTION_TIP = 5;
+     */
+    public void fetchContent(){
+        twitE.getTimeline();
+        //twitter adds all tweet content to itself automatically
+        quizE.addContent(twitE.getContent(Tweet.SECUROBOT_QUIZ));
+        Log.d("Quiz", "content:\n");
+        quizE.printContent();
     }
 }
