@@ -22,10 +22,17 @@ import twitter4j.conf.ConfigurationBuilder;
 public class Tweet {
     String tweetBy;
     String tweet;
+    Status status;
 
-    public Tweet(String tweetBy, String tweet) {
-        this.tweetBy = tweetBy;
-        this.tweet = tweet;
+    public static final String HASHTAG_QUIZ = "#securobotquiz";
+    public static final String HASHTAG_TIP = "#securobottip";
+    public static final String HASHTAG_ARTICLE = "#securobotarticle";
+    public static final String HASHTAG_RSSFEED = "#securobotrssfeed";
+
+    public Tweet(Status status) {
+        this.status = status;
+        this.tweetBy = status.getUser().getScreenName();
+        this.tweet = status.getText();
     }
 
     public String getTweetBy() {
@@ -44,7 +51,9 @@ public class Tweet {
         this.tweet = tweet;
     }
 
+    public void parseTweet() {
 
+    }
 }
 
 

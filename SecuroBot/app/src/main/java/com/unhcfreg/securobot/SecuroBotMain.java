@@ -361,9 +361,9 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
 
             if(re <= 1) {  //20% chance that the head will rotate
                 switch(ra){
-                    case 0: newPos = 600; break;
+                    case 0: newPos = 1000; break;    //limit 600
                     case 1: newPos = 1550; break;
-                    case 2: newPos = 2450; break;
+                    case 2: newPos = 2000; break;   //limit 2450
                     default: break;
                 }
 
@@ -381,29 +381,35 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
             else{
                 float measVal = iRSensors.input.read();
                 float measVolt = iRSensors.input.getVoltage();
-                if(iRSensors.motionDetect(measVal, measVolt)) {
-                    led_.write(false);
-                    Log.d("MOTION", "Detected motion!"
-                                    + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
-                                    ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
-                    );
+                if(!action.TTSE.t1.isSpeaking())
+                {
+                    if(iRSensors.motionDetect(measVal, measVolt)) {
+                        led_.write(false);
+                        Log.d("MOTION", "Detected motion!"
+                                        + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                                        ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                        );
 
-                    action.executeGreeting();   //execute a random greeting
+                        action.executeGreeting();   //execute a random greeting
 
-                    action.displayPage = false;
-                    action.displayQuiz = false;
-                    //action.executeRandActivity();
+                        action.displayPage = false;
+                        action.displayQuiz = false;
+                        //action.executeRandActivity();
                     /*
                     int rn = r.nextInt(2-0);
                     if(rn == 1) action.executeQuiz();
                     else action.executePage();
                     */
-                    //action.executeMakeTweet("IR sensor voltage: " + measVolt);
-                    //action.executeTweetSearch(true);
-                    action.executeTimelineSearch(true);
+                        //action.executeMakeTweet("IR sensor voltage: " + measVolt);
+                        //action.executeTweetSearch(true);
+                        action.executeTimelineSearch(true);
 
-                    Log.d("IR SENSORS", "reinitializing...");
-                    initIR();
+                        Log.d("IR SENSORS", "reinitializing...");
+                        initIR();
+                    }
+                    else {
+                        led_.write(true);
+                    }
                 }
                 else {
                     led_.write(true);

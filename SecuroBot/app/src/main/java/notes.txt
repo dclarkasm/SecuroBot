@@ -9,6 +9,7 @@ UNHSecuroBot, nhBlue22
 UNHSBotManager, nhBlue22
 
 TODO: (Orginized in order of priority (most important first
+- stop reading IR while in another process or speaking
 - make a seperate twitter account for the robot to read tweets to generate the content (quiz links, RSS feed links, jokes, tips, etc) based on hashtags
     i.e. #securobotquiz will be a quiz link. The link will be added to a QUEUE data structure (first in, first out)
 - add an interaction timer - the timer automatically quits out of activities if there is no user action taken after X time

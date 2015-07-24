@@ -15,8 +15,8 @@ public class IRSensor{
     public int pin;
     public float baseValue=0, baseVolt=0;
     public final int iSamples = 10;    //number of samples to take when initializing
-    private final float valThresh = .05f;
-    private final float volThresh = 0.1f;
+    private final float valThresh = .08f;   //.05
+    private final float volThresh = 0.12f;   //.1
 
     public IRSensor(int pin){
         this.pin = pin;

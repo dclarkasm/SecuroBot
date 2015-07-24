@@ -28,8 +28,12 @@ import java.io.BufferedReader;
  */
 public class TwitterEngine {
     public TTSEngine engine;
-    private String latestTweet;
-    private String latestStatus;
+    //private String latestTweet;
+    //private String latestStatus;
+    //private List<Status> tweetlist;
+    //private List<Status> timeline;
+    private ArrayList<Tweet> parsedTweets = new ArrayList<Tweet>(); //list of the most recent random tweets for speaking (parsed)
+    private ArrayList<Tweet> parsedStatuses = new ArrayList<Tweet>(); //list of the most recent status updates for speaking (parsed)
     Twitter twitter;
     private static final String TWITTER_KEY = "JlxXwwVxSH8KuiqIktrNE2VQp";
     private static final String TWITTER_SECRET = "4m1kuoWKOrHDLX7CulAs6uAzEKpjFUWUkweWFunQCXlZCVpGXm";
@@ -52,24 +56,16 @@ public class TwitterEngine {
         try {
             Query query = new Query(text);
             QueryResult result;
-            do {
-                result = twitter.search(query);
-                List<Status> tweets = result.getTweets();
-                /*
-                for (Status tweet : tweets) {
-                    Log.d("Twitter", "@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
-                    latestTweet = tweet.getUser().getScreenName() + " says " + tweet.getText();
-                }
-                */
-                //The latest tweet is in the last spot in the list
-                Log.d("Twitter", "@" + tweets.get(0).getUser().getScreenName() + " - " + tweets.get(0).getText());
-                latestTweet = tweets.get(0).getUser().getScreenName() + " says " + tweets.get(0).getText();
-            } while ((query = result.nextQuery()) != null);
-            return;
+            result = twitter.search(query);
+            List<Status> tweets = result.getTweets();
+            //The latest tweet is in the first spot in the list
+            Log.d("Twitter", "@" + tweets.get(0).getUser().getScreenName() + " - " + tweets.get(0).getText());
+            for(int i=0; i<10 && i<tweets.size(); i++) {
+                parsedTweets.add(new Tweet(tweets.get(i)));
+            }
         } catch (TwitterException te) {
             te.printStackTrace();
             Log.d("Twitter", "Failed to search tweets: " + te.getMessage());
-            return;
         }
     }
 
@@ -80,8 +76,8 @@ public class TwitterEngine {
             Log.d("Twitter", "Showing @" + user.getScreenName() + "'s home timeline.");
             for (Status status : statuses) {
                 Log.d("Twitter", "@" + status.getUser().getScreenName() + " - " + status.getText());
+                parsedStatuses.add(new Tweet(status));
             }
-            latestStatus = statuses.get(0).getText();
         } catch (TwitterException te) {
             te.printStackTrace();
             Log.d("Twitter", "Failed to get timeline: " + te.getMessage());
@@ -94,11 +90,12 @@ public class TwitterEngine {
     }
 
     public void speakLatestTweet(){
-        engine.speak(latestTweet, TextToSpeech.QUEUE_FLUSH, null);
+        engine.speak(parsedTweets.get(0).getTweetBy() + " says " +
+                parsedTweets.get(0).getTweet(), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void speakLatestStatus() {
-        engine.speak(latestStatus, TextToSpeech.QUEUE_FLUSH, null);
+        engine.speak(parsedStatuses.get(0).getTweet(), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void updateStatus(String text) {
@@ -155,5 +152,6 @@ public class TwitterEngine {
             return;
         }
     }
+
 }
 
