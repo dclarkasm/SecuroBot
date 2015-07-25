@@ -8,6 +8,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
@@ -25,22 +26,18 @@ public class RSSEngine {
     private XmlPullParserFactory xmlFactoryObject;
     public volatile boolean processing = false;
     private boolean processingFailure = false;
-    private HashMap<String, String> finalURL = new HashMap<>();
-    private String keys[];
+    //private HashMap<String, String> finalURL = new HashMap<>();
+    private ArrayList<String> URLList = new ArrayList<String>();
+    //private String keys[];
     Random r = new Random();
 
-    public RSSEngine(String url) {
-        finalURL.put("Naked Security", "https://nakedsecurity.sophos.com/feed/");
-        finalURL.put("SANS Institute", "https://www.sans.org/webcasts/rss/");
-        finalURL.put("The Register", "http://www.theregister.co.uk/headlines.rss");
-        keys = finalURL.keySet().toArray(new String[finalURL.keySet().size()]); //convert the set of keys to an array of strings
+    public RSSEngine() {
+        URLList.add("https://nakedsecurity.sophos.com/feed/");
+        //URLList.add("https://www.sans.org/webcasts/rss/");
+        //URLList.add("http://www.theregister.co.uk/headlines.rss");
+        //keys = finalURL.keySet().toArray(new String[finalURL.keySet().size()]); //convert the set of keys to an array of strings
 
-        if(url==null) { //set a random url for the search if no url specified
-            int rn = r.nextInt(keys.length-0);
-            urlString = finalURL.get(keys[rn]);
-            author = keys[rn];
-        }
-        else urlString = url;
+
     }
 
     public String getTitle(){
@@ -93,9 +90,9 @@ public class RSSEngine {
                     case XmlPullParser.END_TAG:
                     {
                         if(name.equals("title") && foundChannel && !foundAuthor) {
-                            if(author==null) author = text; //if the author was not set on initialization
+                            author = text; //if the author was not set on initialization
                             foundAuthor = true;
-                            Log.d("RSS", "found Author");
+                            Log.d("RSS", "found RSSFeed Author: " + author);
                         }
                         else if(name.equals("title") && foundChannel && foundAuthor &&
                                 foundItem && !foundTitle) {
@@ -112,6 +109,7 @@ public class RSSEngine {
                                 foundItem && foundTitle && !foundDescription) {
                             description = text;
                             foundDescription = true;
+                            Log.d("RSS", "found RSSFeed description: " + description);
                             //TODO: add code here to process the string description
                         }
                         break;
@@ -129,6 +127,12 @@ public class RSSEngine {
 
     public void fetchXML(){
         processing = true;
+
+        //set a random url for the search if no url specified
+        Log.d("RSS", "URL list size: " + URLList.size());
+        int rn = r.nextInt(URLList.size()-0);
+        urlString = URLList.get(rn);
+
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run() {
@@ -158,6 +162,7 @@ public class RSSEngine {
                 }
 
                 catch (Exception e) {
+                    Log.d("RSS", "Processing error for url: " + urlString);
                     processing = false;
                     processingFailure = false;
                 }
@@ -167,4 +172,20 @@ public class RSSEngine {
         thread.start();
     }
 
+    public void printContent() {
+        for(String q : URLList) {
+            Log.d("RSS", q);
+        }
+    }
+
+    public void addContent(ArrayList<String> content) {
+        if(content!=null) {
+            for(String c : content) {
+                if(!URLList.contains(c)) URLList.add(c);
+            }
+        }
+
+        Log.d("RSS", "content:\n");
+        printContent();
+    }
 }

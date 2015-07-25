@@ -12,7 +12,7 @@ import java.util.Random;
  */
 public class QuizEngine{
     private Random r = new Random();
-    private ArrayList<String> quizes = new ArrayList<String>();   //initial array. we add content via constructor and twitter
+    private ArrayList<String> quizes = new ArrayList<String>();   //initial array. we add content via constructor and addContent()
 
     public QuizEngine() {
         quizes.add("https://www.onlineassessmenttool.com/test/assessment-26343");
@@ -30,6 +30,13 @@ public class QuizEngine{
     }
 
     public void addContent(ArrayList<String> content) {
-        quizes.addAll(content);
+        if(content!=null) {
+            for(String c : content) {
+                if(!quizes.contains(c)) quizes.add(c);
+            }
+        }
+
+        Log.d("Quiz", "content:\n");
+        printContent();
     }
 }

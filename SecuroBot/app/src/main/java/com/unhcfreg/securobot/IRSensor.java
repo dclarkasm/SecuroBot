@@ -22,22 +22,12 @@ public class IRSensor{
         this.pin = pin;
     }
 
-    public void initialize(float baseValue, float baseVolt) throws ConnectionLostException, InterruptedException{
-        /*baseValue = 0;
-        baseVolt = 0;
-        for(int i=0; i<iSamples; i++) {
-            baseValue += input.read();
-            baseVolt += input.getVoltage();
-        }
-        baseValue = baseValue/iSamples;
-        baseVolt = baseVolt/iSamples;*/
+    public void initialize(float baseValue, float baseVolt){
         this.baseValue = baseValue;
         this.baseVolt = baseVolt;
     }
 
     public boolean motionDetect(float measuredVal, float measuredVolt) throws ConnectionLostException, InterruptedException {
-        /*float measuredVal = input.read();
-        float measuredVolt = input.getVoltage();*/
         if(measuredVal>(baseValue+valThresh) || measuredVolt>(baseVolt+volThresh) ||
                 measuredVal<(baseValue-valThresh) || measuredVolt<(baseVolt-volThresh)){
             return true;

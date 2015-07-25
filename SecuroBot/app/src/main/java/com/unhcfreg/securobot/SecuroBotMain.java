@@ -400,7 +400,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
 
                         action.displayPage = false;
                         action.displayQuiz = false;
-                        //action.executeRandActivity();
+                        action.executeRandActivity();
                     /*
                     int rn = r.nextInt(2-0);
                     if(rn == 1) action.executeQuiz();
@@ -408,7 +408,8 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                     */
                         //action.executeMakeTweet("IR sensor voltage: " + measVolt);
                         //action.executeTweetSearch(true);
-                        action.executeTimelineSearch(true);
+                        //action.executeTimelineSearch(true);
+                        //action.executeRSS(true);
 
                         Log.d("IR SENSORS", "reinitializing...");
                         initIR();
@@ -434,7 +435,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
                 //Thread.sleep(5);
             }
             iRSensors.initialize(baseVal/iRSensors.iSamples, baseVolt/iRSensors.iSamples);
-            /*
+/*
             Log.d("INIT IR", "Base Val: " + baseVal/iRSensors.iSamples +
                     ", base Volt: " + baseVolt/iRSensors.iSamples);*/
         }

@@ -13,9 +13,9 @@ import java.util.Random;
  */
 public class ActionEngine {
     public TTSEngine TTSE;
-    private RSSEngine RSSFeed;
-    private QuizEngine quizE = new QuizEngine();
     private GreetingEngine greetingE = new GreetingEngine();
+    private RSSEngine RSSFeed = new RSSEngine();
+    private QuizEngine quizE = new QuizEngine();
     private JokeEngine jokeE = new JokeEngine();
     private TipEngine tipE = new TipEngine();
     private TwitterEngine twitE = new TwitterEngine();
@@ -33,11 +33,9 @@ public class ActionEngine {
 
     public ActionEngine(TTSEngine e, WebView wv) {
         setTTSEngine(e);
-        executeTweetSearch(false);
+        //executeTweetSearch(false);
         executeRSS(false);
         webPageView = wv;
-        fetchContent();
-        //wv.setVisibility(View.INVISIBLE);   //we already set this in the layout xml, but just incase
     }
 
     public void setTTSEngine(TTSEngine e){
@@ -57,13 +55,13 @@ public class ActionEngine {
         int rn = r.nextInt(6-0);
 
         switch(rn) {
-            case ACTION_TWEET: executeTweetSearch(true); break;
+            case ACTION_TWEET: executeTimelineSearch(true); break;
             case ACTION_RSS: executeRSS(true); break;
             case ACTION_JOKE: executeJoke(); break;
             case ACTION_QUIZ: executeQuiz(); break;
             case ACTION_PAGE: executePage(); break;
             case ACTION_TIP: executeTip(); break;
-            default: executeTweetSearch(true); break;
+            default: executeTimelineSearch(true); break;
         }
     }
 
@@ -86,7 +84,7 @@ public class ActionEngine {
     }
 
     public void executeTimelineSearch(boolean speak) {
-        twitE.getTimeline();
+        fetchContent();
         try{
             if(speak) {
                 executeSpeech("Check out my latest status update. ");
@@ -104,7 +102,6 @@ public class ActionEngine {
     }
 
     public void executeRSS(boolean speak) {
-        RSSFeed = new RSSEngine(null);
         RSSFeed.fetchXML();
 
         while(RSSFeed.processing);
@@ -129,7 +126,6 @@ public class ActionEngine {
 
     public void executePage() {
         if(displayPage) displayPage = false;
-        RSSFeed = new RSSEngine(null);
         RSSFeed.fetchXML();
 
         while(RSSFeed.processing);
@@ -161,12 +157,18 @@ public class ActionEngine {
     public static final int ACTION_QUIZ = 3;
     public static final int ACTION_PAGE = 4;
     public static final int ACTION_TIP = 5;
+
+    private RSSEngine RSSFeed;
+    private QuizEngine quizE = new QuizEngine();
+    private JokeEngine jokeE = new JokeEngine();
+    private TipEngine tipE = new TipEngine();
      */
     public void fetchContent(){
         twitE.getTimeline();
         //twitter adds all tweet content to itself automatically
         quizE.addContent(twitE.getContent(Tweet.SECUROBOT_QUIZ));
-        Log.d("Quiz", "content:\n");
-        quizE.printContent();
+        RSSFeed.addContent(twitE.getContent(Tweet.SECUROBOT_RSSFEED));
+        jokeE.addContent(twitE.getContent(Tweet.SECUROBOT_JOKE));
+        tipE.addContent(twitE.getContent(Tweet.SECUROBOT_TIP));
     }
 }

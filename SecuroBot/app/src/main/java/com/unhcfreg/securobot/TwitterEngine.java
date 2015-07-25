@@ -28,11 +28,12 @@ import java.io.BufferedReader;
  */
 public class TwitterEngine {
     public TTSEngine engine;
-    //private String latestTweet;
-    //private String latestStatus;
-    //private List<Status> tweetlist;
-    //private List<Status> timeline;
-    private ArrayList<String> parsedTweets = new ArrayList<String>(); //list of the most recent random tweets for speaking (parsed)
+    private ArrayList<String> parsedReTweets = new ArrayList<String>(); //list of the most recent retweets for speaking (parsed)
+    private ArrayList<String> parsedTips = new ArrayList<String>();
+    private ArrayList<String> parsedQuizLinks = new ArrayList<String>();
+    private ArrayList<String> parsedRSSLinks = new ArrayList<String>();
+    private ArrayList<String> parsedJokes = new ArrayList<String>();
+    private ArrayList<String> parsedArticleLinks = new ArrayList<String>();
     private ArrayList<Tweet> parsedRandTweets = new ArrayList<Tweet>(); //list of the most recent random tweets for speaking (parsed)
     private ArrayList<Tweet> parsedStatuses = new ArrayList<Tweet>(); //list of the most recent status updates for speaking (parsed)
     Twitter twitter;
@@ -78,8 +79,38 @@ public class TwitterEngine {
                 Log.d("Twitter", "@" + status.getUser().getScreenName() + " - " + status.getText());
                 Tweet newTweet = new Tweet(status);
                 parsedStatuses.add(newTweet);
-                if(newTweet.getContentType()==Tweet.SECUROBOT_RT) {     //automatically add retweets to the content we want to speak
-                    parsedTweets.add(newTweet.getTweetBy() + " says " + newTweet.getContent());
+                switch(newTweet.getContentType()) {
+                    case Tweet.SECUROBOT_ARTICLE:
+                        if(!parsedArticleLinks.contains(newTweet.getContent())) {
+                            parsedArticleLinks.add(newTweet.getContent());
+                        }
+                        break;
+                    case Tweet.SECUROBOT_JOKE:
+                        if(!parsedJokes.contains(newTweet.getContent())){
+                            parsedJokes.add(newTweet.getContent());
+                        }
+                        break;
+                    case Tweet.SECUROBOT_QUIZ:
+                        if(!parsedQuizLinks.contains(newTweet.getContent())) {
+                            parsedQuizLinks.add(newTweet.getContent());
+                        }
+                        break;
+                    case Tweet.SECUROBOT_RSSFEED:
+                        if(!parsedRSSLinks.contains(newTweet.getContent())) {
+                            parsedRSSLinks.add(newTweet.getContent());
+                        }
+                        break;
+                    case Tweet.SECUROBOT_TIP:
+                        if(!parsedTips.contains(newTweet.getContent())) {
+                            parsedTips.add(newTweet.getContent());
+                        }
+                        break;
+                    case Tweet.SECUROBOT_RT:
+                        if(!parsedReTweets.contains(newTweet.getTweetBy() + " says " + newTweet.getContent())) {
+                            parsedReTweets.add(newTweet.getTweetBy() + " says " + newTweet.getContent());
+                        }
+                        break;
+                    default: break;
                 }
             }
         } catch (TwitterException te) {
@@ -90,14 +121,15 @@ public class TwitterEngine {
     }
 
     public ArrayList<String> getContent(final int contentType) {
-        ArrayList<String> contentArr = new ArrayList<String>();
-        for(Tweet t : parsedStatuses) {
-            String content = t.getContentByType(contentType);
-            if(content!=null){
-                contentArr.add(content);
-            }
+        switch(contentType) {
+            case Tweet.SECUROBOT_ARTICLE: return parsedArticleLinks;
+            case Tweet.SECUROBOT_JOKE: return parsedJokes;
+            case Tweet.SECUROBOT_QUIZ: return parsedQuizLinks;
+            case Tweet.SECUROBOT_RSSFEED: return parsedRSSLinks;
+            case Tweet.SECUROBOT_TIP: return parsedTips;
+            default: break;
         }
-        return contentArr;
+        return null;
     }
 
     public void setTTSEngine(TTSEngine e) {
@@ -105,7 +137,7 @@ public class TwitterEngine {
     }
 
     public void speakLatestTweet(){
-        engine.speak(parsedTweets.get(0), TextToSpeech.QUEUE_FLUSH, null);
+        engine.speak(parsedReTweets.get(0), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     public void speakLatestStatus() {

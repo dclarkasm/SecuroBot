@@ -14,6 +14,7 @@ import twitter4j.QueryResult;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
+import twitter4j.URLEntity;
 import twitter4j.auth.OAuth2Token;
 import twitter4j.conf.ConfigurationBuilder;
 
@@ -42,6 +43,7 @@ public class Tweet {
     private String parsedContent;
     private int contentType = UNKNOWN;
     HashtagEntity hashtags [];
+    private ArrayList<String> URLs = new ArrayList<String>();
 
 
     public Tweet(Status status) {
@@ -76,11 +78,28 @@ public class Tweet {
             for(HashtagEntity ht : hashtags) {
                 Log.d("TweetParser", ht.getText());
                 contentType = getTweetType();
-                parsedContent = status.getText();
+                parsedContent = removeHashtags(status);
             }
         }
     }
 
+    private String removeHashtags(Status withTags) {
+        String noTags;
+
+        //grab just the link if one of the below types
+        if(contentType == SECUROBOT_QUIZ ||
+                contentType == SECUROBOT_RSSFEED ||
+                contentType == SECUROBOT_ARTICLE) {
+            for(URLEntity l : status.getURLEntities()) {
+                URLs.add(l.getURL());
+                Log.d("Parsed URL", l.getURL());
+            }
+            noTags = URLs.get(0);
+        }
+        else noTags = status.getText();
+        return noTags;
+    }
+/*
     public String getContentByType(final int contentType) {
         switch(contentType){
             case SECUROBOT_QUIZ: return parsedContent;
@@ -93,7 +112,7 @@ public class Tweet {
             default: return null;
         }
     }
-
+*/
     public String getContent() {
         return parsedContent;
     }
