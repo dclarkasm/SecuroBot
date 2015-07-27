@@ -20,9 +20,6 @@ public class ActionEngine {
     private TipEngine tipE = new TipEngine();
     private TwitterEngine twitE = new TwitterEngine();
     Random r = new Random();
-    WebView webPageView;
-    public boolean displayPage = false;
-    public boolean displayQuiz = false;
 
     public static final int ACTION_TWEET = 0;
     public static final int ACTION_RSS = 1;
@@ -31,11 +28,12 @@ public class ActionEngine {
     public static final int ACTION_PAGE = 4;
     public static final int ACTION_TIP = 5;
 
-    public ActionEngine(TTSEngine e, WebView wv) {
+    private int currentAction;
+
+    public ActionEngine(TTSEngine e) {
         setTTSEngine(e);
         //executeTweetSearch(false);
         executeRSS(false);
-        webPageView = wv;
     }
 
     public void setTTSEngine(TTSEngine e){
@@ -63,6 +61,11 @@ public class ActionEngine {
             case ACTION_TIP: executeTip(); break;
             default: executeTimelineSearch(true); break;
         }
+        currentAction = rn;
+    }
+
+    public int getCurrentAction() {
+        return currentAction;
     }
 
     public void executeTweetSearch(boolean speak) {
@@ -119,13 +122,10 @@ public class ActionEngine {
     }
 
     public void executeQuiz() {
-        if(displayQuiz) displayQuiz = false;
         executeSpeech("Would you like to take a quiz?");
-        if(!displayQuiz) displayQuiz = true;
     }
 
     public void executePage() {
-        if(displayPage) displayPage = false;
         RSSFeed.fetchXML();
 
         while(RSSFeed.processing);
@@ -133,7 +133,6 @@ public class ActionEngine {
             executeSpeech("Check out this article eye just red from " + RSSFeed.getAuthor());    //read is spelled red for phonetics same with I (eye)
             //webPageView.loadUrl(RSSFeed.getLink());
             while(TTSE.t1.isSpeaking());
-            if(!displayPage) displayPage = true;
             Log.d("WEB PAGE", "Author: " + RSSFeed.getAuthor() + "\nLink: " + RSSFeed.getLink());
         }
     }

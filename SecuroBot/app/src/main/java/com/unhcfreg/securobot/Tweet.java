@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import twitter4j.HashtagEntity;
 import twitter4j.Query;
@@ -96,23 +97,35 @@ public class Tweet {
             }
             noTags = URLs.get(0);
         }
-        else noTags = status.getText();
+        else {
+            String pattern;
+            switch(contentType) {
+                case SECUROBOT_TIP: pattern = "#" + HASHTAG_TIP + "\\s+"; break;
+                case SECUROBOT_JOKE: pattern = "#" + HASHTAG_JOKE + "\\s+"; break;
+                case SECUROBOT_RT: pattern = "#" + TWITTER_RT + "\\s+"; break;
+                default: pattern=null; break;
+            }
+
+            if(pattern!=null) {
+                Pattern r = Pattern.compile(pattern);
+
+                try{
+                    noTags = withTags.getText().split(pattern)[1];
+                    Log.d("RegEx", "Parsed Status: " + noTags);
+                }
+                catch(Exception e) {
+                    Log.d("RegEx", "Error splitting string using RegEx. Hashtags will be included in final string...");
+                    noTags = status.getText();
+                }
+            }
+            else {
+                Log.d("RegEx", "Pattern is null. Hashtags will be included in final string...");
+                noTags = status.getText();
+            }
+        }
         return noTags;
     }
-/*
-    public String getContentByType(final int contentType) {
-        switch(contentType){
-            case SECUROBOT_QUIZ: return parsedContent;
-            case SECUROBOT_TIP: return parsedContent;
-            case SECUROBOT_JOKE: return parsedContent;
-            case SECUROBOT_ARTICLE: return parsedContent;
-            case SECUROBOT_RSSFEED: return parsedContent;
-            case SECUROBOT_RT: return parsedContent;
-            case UNKNOWN: return null;
-            default: return null;
-        }
-    }
-*/
+
     public String getContent() {
         return parsedContent;
     }

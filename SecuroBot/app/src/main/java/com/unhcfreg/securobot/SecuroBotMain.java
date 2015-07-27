@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,10 +21,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
 import java.util.Random;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
@@ -49,9 +54,7 @@ import twitter4j.conf.ConfigurationBuilder;
 public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInitListener
 {
 
-    //TextToSpeech t1;
     TTSEngine t1;
-    //TwitterEngine twitSearch = new TwitterEngine();
     ActionEngine action;
 
     /**
@@ -90,7 +93,9 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     private Handler mHandler;
     Random r = new Random();
     WebView webPageView;
-    WebView webQuizView;
+    boolean actionEnable = true;
+    boolean actionTimeout = false;
+    Queue pageQueue = new LinkedList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +162,7 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         contentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d("TouchEvent", "Content view on click listener called");
                 if (TOGGLE_ON_CLICK) {
                     mSystemUiHider.toggle();
                 } else {
@@ -166,12 +172,25 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         });
 
         webPageView = (WebView) findViewById(R.id.webview);
-        webQuizView = (WebView) findViewById(R.id.webview);
-        WebSettings webQuizSettings = webQuizView.getSettings();
-        webQuizSettings.setJavaScriptEnabled(true);
+        WebSettings webPageSettings = webPageView.getSettings();
+        webPageSettings.setJavaScriptEnabled(true);
         webPageView.setVisibility(View.INVISIBLE);
 
-        action = new ActionEngine(t1, webPageView);
+        webPageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("Timer", "Webpage view touched");
+                if(!actionEnable){    //reset the interaction timer if we are displaying stuff
+                    mHandler.removeCallbacks(interactionTimer);
+                    mHandler.removeCallbacks(timerInterrupt);
+                    interactionTimer.run();
+                    Log.d("Timer", "Touch sensed. Timer was reset.");
+                }
+                return false;
+            }
+        });
+
+        action = new ActionEngine(t1);
         mHandler = new Handler();
 
         startRepeatingTask();
@@ -179,14 +198,12 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
 
     void startRepeatingTask() {
         runnable.run();
-        webpageRunnable.run();
-        fetchContent.run();
+        openWebPage.run();
     }
 
     void stopRepeatingTask() {
         mHandler.removeCallbacks(runnable);
-        mHandler.removeCallbacks(webpageRunnable);
-        mHandler.removeCallbacks(fetchContent);
+        mHandler.removeCallbacks(openWebPage);
     }
 
     Runnable runnable = new Runnable() {
@@ -218,42 +235,42 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     }
 };
 
-    Runnable webpageRunnable = new Runnable() {
-        String currentPage = "";
-        String currentQuiz = "";
+    String lastURL = "";
+    Runnable openWebPage = new Runnable() {
+        String blankPage = "about:blank";
 
         @Override
         public void run() {
-            if(action.displayPage && webPageView.getVisibility()==View.INVISIBLE) {
-                webQuizView.setVisibility(View.INVISIBLE);
-                currentPage = action.getWebPage();
-                webPageView.loadUrl(currentPage);
+            if(!pageQueue.isEmpty()){
+                lastURL = (String)pageQueue.remove();
+                webPageView.loadUrl(lastURL);
                 webPageView.setVisibility(View.VISIBLE);
             }
-            else if(action.displayQuiz && webQuizView.getVisibility()==View.INVISIBLE) {
+            else if(actionEnable && lastURL != blankPage) {
+                lastURL = blankPage;
+                webPageView.loadUrl(lastURL);
                 webPageView.setVisibility(View.INVISIBLE);
-                currentQuiz = action.getQuiz();
-                webPageView.loadUrl(currentQuiz);
-                webQuizView.setVisibility(View.VISIBLE);
             }
-            else if(!action.displayPage && !action.displayQuiz &&
-                    (webPageView.getVisibility()==View.VISIBLE ||
-                    webQuizView.getVisibility()==View.VISIBLE)) {
-                webPageView.setVisibility(View.INVISIBLE);
-                webQuizView.setVisibility(View.INVISIBLE);
-                webPageView.loadUrl(currentQuiz);
-                webPageView.loadUrl(currentPage);
-            }
-
-            mHandler.postDelayed(webpageRunnable, 100);
+            mHandler.postDelayed(openWebPage, 100);
         }
     };
 
-    Runnable fetchContent = new Runnable() {
+    Runnable interactionTimer = new Runnable(){
         @Override
         public void run() {
-            //action.fetchContent();
-            mHandler.postDelayed(fetchContent, 930000); //search content every 15.5 min (allow for 15 min twitter cool down
+            Log.d("Timer", "Called timer");
+            actionEnable = false;
+            Log.d("Timer", "Delay Started...");
+            mHandler.postDelayed(timerInterrupt, 30000);
+        }
+    };
+
+    Runnable timerInterrupt = new Runnable() {
+        @Override
+        public void run() {
+            actionEnable = true;
+            mHandler.removeCallbacks(interactionTimer);
+            Log.d("Timer", "Delay Stopped.");
         }
     };
 
@@ -266,29 +283,18 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         // are available.
         delayedHide(100);
     }
-/*
-    public void onPause(){
-        t1.pause();
-        super.onPause();
-    }
 
-    @Override
-    public void onInit ( int status){
-        t1.init(status);
-        twitSearch.setTTSEngine(t1);
-    }
-*/
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
+
+     //Touch listener to use for in-layout UI controls to delay hiding the
+     //system UI. This is to prevent the jarring behavior of controls going away
+     //while interacting with activity UI.
     View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
             }
+            Log.d("TouchEvent", "OnTouch listener called");
             return false;
         }
     };
@@ -301,14 +307,13 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         }
     };
 
-    /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
-     */
+     //Schedules a call to hide() in [delay] milliseconds, canceling any
+     //previously scheduled calls.
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+
 
 //****************************************************************************************
 //****************************************************************************************
@@ -365,61 +370,80 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
             int re = r.nextInt(100-0); //random number between 0 and 100 for rotation enable
             int ra = r.nextInt(3-0); //random number between 0 and 100 for rotation angle
 
-            if(re <= 1) {  //20% chance that the head will rotate
-                switch(ra){
-                    case 0: newPos = 1000; break;    //limit 600
-                    case 1: newPos = 1550; break;
-                    case 2: newPos = 2000; break;   //limit 2450
-                    default: break;
+            if(actionEnable){
+                if(re <= 1) {  //% chance that the head will rotate
+                    switch(ra){
+                        case 0: newPos = 1000; break;    //limit 600
+                        case 1: newPos = 1550; break;
+                        case 2: newPos = 2000; break;   //limit 2450
+                        default: break;
+                    }
+
+                    if(newPos != currentPos)
+                    {
+                        led_.write(true);
+                        pwm.setPulseWidth(newPos);
+                        currentPos = newPos;
+                        Log.d("ROTATE", "Moving to position: " + newPos + "...");
+                        Thread.sleep(1000);
+                        Log.d("ROTATE", "At position: " + newPos);
+                        initIR();
+                    }
                 }
+                else{
+                    float measVal = iRSensors.input.read();
+                    float measVolt = iRSensors.input.getVoltage();
+                    if(!action.TTSE.t1.isSpeaking())
+                    {
+                        if(iRSensors.motionDetect(measVal, measVolt)) {
+                            led_.write(false);
+                            Log.d("MOTION", "Detected motion!"
+                                            + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                                            ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                            );
 
-                if(newPos != currentPos)
-                {
-                    led_.write(true);
-                    pwm.setPulseWidth(newPos);
-                    currentPos = newPos;
-                    Log.d("ROTATE", "Moving to position: " + newPos + "...");
-                    Thread.sleep(1000);
-                    Log.d("ROTATE", "At position: " + newPos);
-                    initIR();
-                }
-            }
-            else{
-                float measVal = iRSensors.input.read();
-                float measVolt = iRSensors.input.getVoltage();
-                if(!action.TTSE.t1.isSpeaking())
-                {
-                    if(iRSensors.motionDetect(measVal, measVolt)) {
-                        led_.write(false);
-                        Log.d("MOTION", "Detected motion!"
-                                        + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
-                                        ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
-                        );
+                            action.executeGreeting();   //execute a random greeting
 
-                        action.executeGreeting();   //execute a random greeting
+                            action.executeRandActivity();
+/*
+                            if(action.getCurrentAction() == ActionEngine.ACTION_PAGE ||
+                                    action.getCurrentAction() == ActionEngine.ACTION_QUIZ){
+                                pageQueue.add(action.getWebPage());
+                                interactionTimer.run();
+                            }
+*/
+                            switch(action.getCurrentAction()){
+                                case ActionEngine.ACTION_PAGE:
+                                    pageQueue.add(action.getWebPage());
+                                    interactionTimer.run();
+                                    break;
+                                case ActionEngine.ACTION_QUIZ:
+                                    pageQueue.add(action.getQuiz());
+                                    interactionTimer.run();
+                                    break;
+                                default: break;
+                            }
 
-                        action.displayPage = false;
-                        action.displayQuiz = false;
-                        action.executeRandActivity();
                     /*
                     int rn = r.nextInt(2-0);
                     if(rn == 1) action.executeQuiz();
                     else action.executePage();
                     */
-                        //action.executeMakeTweet("IR sensor voltage: " + measVolt);
-                        //action.executeTweetSearch(true);
-                        //action.executeTimelineSearch(true);
-                        //action.executeRSS(true);
+                            //action.executeMakeTweet("IR sensor voltage: " + measVolt);
+                            //action.executeTweetSearch(true);
+                            //action.executeTimelineSearch(true);
+                            //action.executeRSS(true);
 
-                        Log.d("IR SENSORS", "reinitializing...");
-                        initIR();
+                            Log.d("IR SENSORS", "reinitializing...");
+                            initIR();
+                        }
+                        else {
+                            led_.write(true);
+                        }
                     }
                     else {
                         led_.write(true);
                     }
-                }
-                else {
-                    led_.write(true);
                 }
             }
 
