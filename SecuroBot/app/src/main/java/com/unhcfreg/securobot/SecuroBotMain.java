@@ -94,7 +94,6 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
     Random r = new Random();
     WebView webPageView;
     boolean actionEnable = true;
-    boolean actionTimeout = false;
     Queue pageQueue = new LinkedList();
 
     @Override
@@ -329,7 +328,6 @@ public class SecuroBotMain extends IOIOActivity //implements TextToSpeech.OnInit
         private DigitalOutput led_;
         private IRSensor iRSensors = new IRSensor(33);
         private PwmOutput pwm;
-        float value, volts;
         int newPos, currentPos;
 
         /**
